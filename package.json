@@ -1,0 +1,16 @@
+{
+  "name": "gridduel-webapp",
+  "version": "1.0.0",
+  "description": "Grid Duel — hosted web game with built-in two-device connection.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "peer": "^1.0.2"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

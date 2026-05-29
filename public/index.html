@@ -1,0 +1,1653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>GRID DUEL — Party Showdown</title>
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@400;600;800;900&display=swap');
+
+:root{
+  --bg:#0a0e27;
+  --bg2:#141a3a;
+  --panel:#1a2147;
+  --ink:#eef2ff;
+  --muted:#8b96c9;
+  --gold:#ffd23f;
+  --gold2:#ffb627;
+  --hot:#ff3864;
+  --cool:#2de2e6;
+  --good:#3ddc97;
+  --bad:#ff5c5c;
+  --line:rgba(255,255,255,.08);
+  --p1:#ff3864; --p2:#2de2e6; --p3:#3ddc97; --p4:#ffd23f;
+  --p5:#b76eff; --p6:#ff8c42; --p7:#54c6eb; --p8:#f15bb5;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{
+  font-family:'Archivo',system-ui,sans-serif;
+  background:radial-gradient(circle at 20% 0%,#1a2150 0%,var(--bg) 55%);
+  color:var(--ink);
+  overflow-x:hidden;
+  min-height:100vh;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1100px;margin:0 auto;padding:16px;min-height:100vh;display:flex;flex-direction:column}
+
+/* ---- Display helpers ---- */
+.hidden{display:none !important}
+h1,h2,h3{font-family:'Anton',sans-serif;font-weight:400;letter-spacing:.5px;text-transform:uppercase}
+.mono{font-variant-numeric:tabular-nums}
+
+/* ---- Landing ---- */
+.brand{text-align:center;margin:6vh 0 4vh}
+.brand .logo{
+  font-family:'Anton';font-size:clamp(48px,12vw,110px);line-height:.9;
+  background:linear-gradient(180deg,#fff 0%,var(--gold) 60%,var(--gold2) 100%);
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+  filter:drop-shadow(0 6px 0 rgba(0,0,0,.35));
+}
+.brand .sub{color:var(--muted);font-size:clamp(13px,3.5vw,18px);letter-spacing:4px;text-transform:uppercase;margin-top:6px;font-weight:600}
+.tile-grid-deco{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;max-width:320px;margin:18px auto 0}
+.tile-grid-deco i{aspect-ratio:1;border-radius:6px;background:var(--panel);display:block;animation:pulse 3s infinite}
+.tile-grid-deco i:nth-child(3n){background:rgba(255,210,63,.25)}
+.tile-grid-deco i:nth-child(5n){background:rgba(45,226,230,.2)}
+@keyframes pulse{0%,100%{opacity:.4}50%{opacity:1}}
+
+.menu{display:flex;flex-direction:column;gap:14px;max-width:420px;margin:10px auto;width:100%}
+.btn{
+  border:none;border-radius:16px;padding:18px 22px;font-family:'Archivo';font-weight:800;
+  font-size:18px;cursor:pointer;transition:transform .12s,box-shadow .12s;color:#0a0e27;
+  background:linear-gradient(180deg,var(--gold),var(--gold2));
+  box-shadow:0 6px 0 #b3801a,0 12px 22px rgba(0,0,0,.4);
+}
+.btn:active{transform:translateY(4px);box-shadow:0 2px 0 #b3801a}
+.btn.alt{background:linear-gradient(180deg,#2de2e6,#13b8bc);box-shadow:0 6px 0 #0c7d80,0 12px 22px rgba(0,0,0,.4);color:#03222a}
+.btn.ghost{background:transparent;color:var(--ink);border:2px solid var(--line);box-shadow:none;font-weight:600}
+.btn.ghost:active{transform:translateY(2px)}
+.btn.small{padding:12px 16px;font-size:15px;border-radius:12px}
+.btn.hot{background:linear-gradient(180deg,#ff5d7d,var(--hot));box-shadow:0 6px 0 #a51a35,0 12px 22px rgba(0,0,0,.4);color:#fff}
+.btn.good{background:linear-gradient(180deg,#5ef0b0,var(--good));box-shadow:0 6px 0 #1f8d5f;color:#04331f}
+.btn:disabled{opacity:.4;pointer-events:none}
+
+.card{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:22px}
+.field{margin-bottom:16px}
+.field label{display:block;font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;font-weight:700}
+.field input{
+  width:100%;background:var(--bg2);border:2px solid var(--line);border-radius:12px;
+  padding:14px 16px;color:var(--ink);font-size:18px;font-family:'Archivo';font-weight:700;outline:none;
+}
+.field input:focus{border-color:var(--gold)}
+.code-input{text-align:center;font-size:34px !important;letter-spacing:10px;font-family:'Anton' !important}
+
+.note{color:var(--muted);font-size:13px;line-height:1.5;margin-top:8px}
+.back{color:var(--muted);background:none;border:none;font-size:14px;cursor:pointer;padding:8px;font-weight:600;display:inline-flex;align-items:center;gap:6px}
+
+/* ---- Room code display ---- */
+.roomcode{text-align:center;margin:20px 0}
+.roomcode .label{font-size:12px;letter-spacing:3px;color:var(--muted);text-transform:uppercase;font-weight:700}
+.roomcode .code{font-family:'Anton';font-size:64px;letter-spacing:14px;color:var(--gold);margin:6px 0;text-shadow:0 4px 0 rgba(0,0,0,.3)}
+.status-pill{display:inline-flex;align-items:center;gap:8px;background:var(--bg2);padding:8px 16px;border-radius:99px;font-size:13px;font-weight:700;color:var(--muted)}
+.status-pill .dot{width:9px;height:9px;border-radius:50%;background:var(--bad)}
+.status-pill.live .dot{background:var(--good);box-shadow:0 0 8px var(--good)}
+.status-pill.live{color:var(--good)}
+
+/* ---- Player setup ---- */
+.players-list{display:flex;flex-direction:column;gap:10px;margin:16px 0}
+.player-row{display:flex;align-items:center;gap:10px;background:var(--bg2);border-radius:12px;padding:8px 10px;border-left:6px solid var(--pc)}
+.player-row input{flex:1;background:none;border:none;color:var(--ink);font-size:17px;font-weight:700;font-family:'Archivo';outline:none}
+.player-row .swatch{width:24px;height:24px;border-radius:6px;background:var(--pc);flex-shrink:0}
+.player-row .rm{background:none;border:none;color:var(--muted);font-size:22px;cursor:pointer;padding:0 6px}
+
+/* =========================================================
+   STAGE SCREEN (the big shared display)
+   ========================================================= */
+#stageScreen{display:flex;flex-direction:column;min-height:100vh;padding:14px}
+.stage-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.stage-head .mini-logo{font-family:'Anton';font-size:22px;color:var(--gold);letter-spacing:1px}
+.stage-head .roundinfo{font-size:13px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:1px}
+
+/* Grid of category tiles */
+.board{
+  display:grid;gap:8px;flex:1;align-content:center;
+}
+.btile{
+  position:relative;border-radius:12px;padding:8px 6px;min-height:70px;
+  display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;
+  font-weight:800;font-size:11px;line-height:1.15;
+  background:var(--panel);border:2px solid var(--line);
+  transition:transform .25s,box-shadow .25s,background .4s;
+  overflow:hidden;
+}
+.btile .cat-name{position:relative;z-index:2;text-transform:uppercase;letter-spacing:.3px}
+.btile .owner-tag{position:relative;z-index:2;font-size:9px;margin-top:4px;opacity:.85;font-weight:700}
+.btile.owned{color:#fff;border-color:transparent}
+.btile.owned::before{content:'';position:absolute;inset:0;background:var(--oc);opacity:.92;z-index:1}
+.btile.active{transform:scale(1.06);box-shadow:0 0 0 3px var(--gold),0 10px 30px rgba(0,0,0,.5);z-index:5}
+.btile.dueling{animation:duelflash 1s infinite}
+@keyframes duelflash{0%,100%{box-shadow:0 0 0 3px var(--hot)}50%{box-shadow:0 0 0 6px var(--gold)}}
+
+/* Question view on stage */
+.qstage{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:18px;padding:10px}
+.qstage .cat-banner{font-family:'Anton';font-size:clamp(22px,6vw,40px);color:var(--gold);text-transform:uppercase;letter-spacing:1px}
+.qstage .img-frame{
+  width:min(72vw,420px);aspect-ratio:1;border-radius:20px;overflow:hidden;
+  background:var(--bg2);border:4px solid var(--line);
+  display:flex;align-items:center;justify-content:center;position:relative;
+  box-shadow:0 20px 60px rgba(0,0,0,.5);
+}
+.qstage .img-frame img,.qstage .img-frame .clue-img{width:100%;height:100%;object-fit:cover;animation:imgFade .35s ease}
+@keyframes imgFade{from{opacity:0}to{opacity:1}}
+.qstage .img-frame .ld{color:var(--muted);font-size:14px;font-weight:700}
+.img-fallback{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;
+  background:radial-gradient(circle at 50% 35%,#222a55,#141a3a)}
+.img-fallback .fb-q{font-family:'Anton';font-size:64px;color:var(--gold);opacity:.5;line-height:1}
+.img-fallback .fb-cat{font-weight:800;font-size:13px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);text-align:center;padding:0 12px}
+.photo-banner{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);max-width:92vw;z-index:90;
+  background:#3a1620;border:1px solid var(--bad);color:#ffd9df;border-radius:12px;padding:12px 16px;font-size:13px;font-weight:600;line-height:1.5;
+  box-shadow:0 10px 30px rgba(0,0,0,.5);display:flex;align-items:center;gap:10px}
+.photo-banner button{background:rgba(255,255,255,.12);border:none;color:#fff;border-radius:6px;width:24px;height:24px;cursor:pointer;font-weight:800;flex-shrink:0}
+.qstage .qcount{font-size:14px;color:var(--muted);font-weight:700;letter-spacing:2px;text-transform:uppercase}
+
+/* Duel banner */
+.duel-banner{display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:6px;flex-wrap:wrap}
+.duel-side{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 16px;border-radius:14px;background:var(--bg2);border:2px solid var(--sc);min-width:110px}
+.duel-side .nm{font-weight:800;font-size:15px;color:#fff}
+.duel-side .clk{font-family:'Anton';font-size:30px}
+.duel-side.active-turn{box-shadow:0 0 0 3px var(--gold),0 0 20px rgba(255,210,63,.5);transform:scale(1.05)}
+.duel-side.active-turn .clk{color:var(--gold)}
+.duel-vs{font-family:'Anton';font-size:24px;color:var(--hot)}
+
+/* Timer bars */
+.clk.low{color:var(--bad);animation:tick .5s infinite}
+@keyframes tick{0%,100%{opacity:1}50%{opacity:.5}}
+
+/* Winner overlay */
+.overlay{position:fixed;inset:0;background:rgba(5,8,25,.95);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:50;gap:16px;padding:20px;text-align:center}
+.overlay .crown{font-size:70px}
+.overlay h1{font-size:clamp(32px,9vw,64px);color:var(--gold)}
+.overlay .wname{font-family:'Anton';font-size:clamp(40px,11vw,80px);color:#fff}
+
+/* =========================================================
+   JUDGE / ADMIN SCREEN
+   ========================================================= */
+#judgeScreen{display:flex;flex-direction:column;min-height:100vh;padding:14px;gap:12px}
+.judge-head{display:flex;justify-content:space-between;align-items:center}
+.judge-head .ttl{font-family:'Anton';font-size:20px;color:var(--cool);letter-spacing:1px}
+.phase-card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:18px}
+.phase-card .ph-label{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:6px}
+
+.answer-reveal{text-align:center;background:linear-gradient(180deg,var(--bg2),var(--panel));border:2px solid var(--gold);border-radius:18px;padding:22px 16px;margin:4px 0}
+.answer-reveal .a-label{font-size:11px;letter-spacing:3px;color:var(--gold);text-transform:uppercase;font-weight:800}
+.answer-reveal .a-name{font-family:'Anton';font-size:clamp(28px,8vw,46px);color:#fff;margin-top:6px;line-height:1}
+.answer-reveal .a-img{width:120px;height:120px;border-radius:14px;object-fit:cover;margin:12px auto 0;border:2px solid var(--line);display:block}
+
+.judge-turn-info{text-align:center;font-size:15px;color:var(--muted);font-weight:700;margin-bottom:4px}
+.judge-turn-info b{color:var(--gold);font-size:20px}
+.clk-big{font-family:'Anton';font-size:42px;text-align:center}
+.clk-big.low{color:var(--bad)}
+
+.judge-actions{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px}
+.judge-actions.solo{grid-template-columns:1fr}
+.judge-actions .btn{font-size:20px;padding:22px}
+
+.tile-picker{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:8px;max-height:50vh;overflow-y:auto;padding-right:4px}
+.tp-tile{position:relative;border-radius:12px;padding:12px 7px;font-size:10px;font-weight:800;text-align:center;background:#161d3f;border:1.5px solid rgba(255,255,255,.07);cursor:pointer;text-transform:uppercase;line-height:1.15;color:#cdd5f5;min-height:60px;display:flex;flex-direction:column;justify-content:center;gap:4px;overflow:hidden;transition:transform .2s}
+.tp-tile .o{font-size:9px;opacity:.9;font-weight:800;letter-spacing:.5px}
+.tp-tile.owned{color:#fff;border-color:transparent;
+  background:linear-gradient(180deg,var(--pc) 0 4px,transparent 4px),linear-gradient(160deg,color-mix(in srgb,var(--pc) 30%,#0e1430),color-mix(in srgb,var(--pc) 15%,#0e1430))}
+.tp-tile.owned .o{color:var(--pc);filter:brightness(1.4)}
+.tp-tile.owned::after{content:'🎯';position:absolute;top:3px;right:5px;font-size:11px;border:none}
+.tp-tile.mine{outline:3px solid var(--gold)}
+.tp-tile:active{transform:scale(.95)}
+.tp-tile.pickable{border-color:var(--gold);animation:pulse 1.5s infinite}
+
+.scoreboard{display:flex;flex-direction:column;gap:6px}
+.sb-row{display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--bg2);border-radius:10px;border-left:5px solid var(--pc)}
+.sb-row .nm{flex:1;font-weight:800;font-size:15px}
+.sb-row .ct{font-family:'Anton';font-size:20px;color:var(--gold)}
+.sb-row.out{opacity:.4}
+.sb-row.out .nm{text-decoration:line-through}
+
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--panel);border:1px solid var(--gold);color:var(--ink);padding:14px 22px;border-radius:14px;font-weight:700;z-index:60;box-shadow:0 10px 30px rgba(0,0,0,.5);max-width:90vw;text-align:center;animation:toastin .3s}
+@keyframes toastin{from{opacity:0;transform:translate(-50%,10px)}}
+
+.help-box{background:rgba(45,226,230,.08);border:1px solid rgba(45,226,230,.25);border-radius:12px;padding:14px;font-size:13px;line-height:1.6;color:var(--ink)}
+.help-box b{color:var(--cool)}
+.divider{height:1px;background:var(--line);margin:14px 0}
+.row-2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.flag-emoji{font-size:13px}
+details{background:var(--bg2);border-radius:12px;padding:4px 14px;margin-top:8px}
+summary{cursor:pointer;font-weight:700;padding:10px 0;font-size:14px;color:var(--cool)}
+details p,details li{font-size:13px;line-height:1.6;color:var(--muted);margin:4px 0}
+details ul{padding-left:18px}
+
+/* ---- Setup: board size picker ---- */
+.size-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px}
+.cat-pick-grid{display:flex;flex-direction:column;gap:6px;max-height:54vh;overflow:auto;padding-right:2px}
+.cat-pick{display:flex;align-items:center;gap:10px;background:var(--bg2);border:2px solid var(--line);border-radius:10px;padding:11px 13px;cursor:pointer;transition:border-color .15s,background .15s}
+.cat-pick.on{border-color:var(--good);background:rgba(61,220,151,.1)}
+.cat-pick .cp-check{width:20px;height:20px;border-radius:6px;border:2px solid var(--muted);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;flex-shrink:0;color:var(--good)}
+.cat-pick.on .cp-check{border-color:var(--good);background:var(--good);color:#04331f}
+.cat-pick .cp-name{flex:1;font-weight:800;font-size:14px}
+.cat-pick .cp-count{font-size:11px;color:var(--muted);background:rgba(255,255,255,.06);padding:2px 9px;border-radius:99px;font-weight:700}
+.size-opt{background:var(--bg2);border:2px solid var(--line);border-radius:12px;padding:12px 6px;color:var(--ink);font-family:'Archivo';font-weight:800;font-size:16px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px}
+.size-opt small{font-size:10px;color:var(--muted);font-weight:600}
+.size-opt.on{border-color:var(--gold);background:rgba(255,210,63,.12);color:var(--gold)}
+
+/* ---- Draft screen ---- */
+.draft-screen{display:flex;flex-direction:column;gap:12px;padding:8px 0}
+.interstitial{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:6px;min-height:70vh}
+.interstitial .pass-icon{font-size:54px;animation:nudge 1.4s infinite}
+@keyframes nudge{0%,100%{transform:translateX(-6px)}50%{transform:translateX(6px)}}
+.interstitial .pass-to{color:var(--muted);font-size:14px;letter-spacing:2px;text-transform:uppercase;font-weight:700}
+.interstitial .pass-name{font-family:'Anton';font-size:clamp(36px,11vw,64px);line-height:1}
+.interstitial .btn{margin-top:18px}
+.draft-head{text-align:center}
+.draft-head .dh-name{font-family:'Anton';font-size:26px}
+.draft-head .dh-sub{color:var(--muted);font-size:13px;font-weight:600;margin-top:2px}
+.draft-head .dh-sub b{color:var(--gold)}
+.draft-flash{text-align:center;background:rgba(255,92,92,.15);border:1px solid var(--bad);color:#ffd0d0;border-radius:10px;padding:8px;font-size:13px;font-weight:700}
+.draft-prog{display:flex;gap:6px;justify-content:center;margin-top:6px}
+.pdot{width:12px;height:12px;border-radius:50%;opacity:.3}
+.pdot.active{opacity:1;box-shadow:0 0 0 3px rgba(255,255,255,.2)}
+.pdot.done{opacity:.7}
+
+/* ---- Grid board (shared by draft + stage) ---- */
+/* ===== BOARD TILES — contained ownership, no glow bleed ===== */
+.grid-board{display:grid;gap:9px;width:100%}
+.grid-board.big{gap:11px;flex:1}
+.gb{position:relative;aspect-ratio:1;border-radius:14px;
+  background:#161d3f;border:1.5px solid rgba(255,255,255,.07);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;
+  font-size:9.5px;font-weight:800;line-height:1.15;padding:6px 5px;text-transform:uppercase;letter-spacing:.3px;
+  color:#cdd5f5;overflow:hidden;
+  transition:transform .28s cubic-bezier(.2,.9,.3,1.2), border-color .25s, background .35s, opacity .25s;}
+.gb span{position:relative;z-index:3}
+.gb .ot{font-size:8px;font-weight:800;margin-top:3px;opacity:.85;letter-spacing:.6px}
+.gb .chk{font-size:15px;margin-top:3px}
+.gb .lock{font-size:11px;opacity:.5;margin-top:2px}
+
+/* OWNED: muted tinted fill + solid color top band, fully contained */
+.gb.owned, .gb.mine{
+  color:#fff;border-color:transparent;
+  background:
+    linear-gradient(180deg, var(--pc) 0 5px, transparent 5px),                 /* top ownership band */
+    linear-gradient(160deg, color-mix(in srgb,var(--pc) 34%, #11173200) 0%, color-mix(in srgb,var(--pc) 16%, #0e1430) 100%);
+}
+.gb.owned .cat-name, .gb.mine .cat-name{color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.55)}
+.gb.owned .ot{color:var(--pc);filter:brightness(1.35) saturate(1.2)}
+/* a thin solid inner ring keeps the color crisp without bleeding onto neighbors */
+.gb.owned::after, .gb.mine::after{content:'';position:absolute;inset:0;border-radius:14px;
+  border:1.5px solid color-mix(in srgb,var(--pc) 55%, transparent);pointer-events:none;z-index:2}
+
+/* DRAFT: my newly-claimed tiles in the secret draft */
+.gb.mine{background:
+    linear-gradient(180deg, var(--pc) 0 5px, transparent 5px),
+    linear-gradient(160deg, color-mix(in srgb,var(--pc) 45%, #0e1430) 0%, color-mix(in srgb,var(--pc) 24%, #0e1430) 100%);}
+.gb.mine .chk{color:#fff}
+
+/* TAKEN by someone else (draft, hidden owner) */
+.gb.taken{background:#20264a;color:#5b659a;border-color:transparent}
+.gb.taken::after{display:none}
+
+/* FADED / not currently selectable */
+.gb.faded{opacity:.38;filter:saturate(.6)}
+
+/* PICKABLE (draft) — animated INSET dashed ring, stays inside the tile */
+.gb.pickable{cursor:pointer;border-color:transparent;color:#fff;
+  background:linear-gradient(160deg,#1d2752,#161d3f);}
+.gb.pickable::after{content:'';position:absolute;inset:3px;border-radius:11px;
+  border:2px dashed var(--gold);pointer-events:none;z-index:4;
+  animation:dashSpin 14s linear infinite, dashPulse 1.6s ease-in-out infinite}
+.gb.pickable:active{transform:scale(.93)}
+@keyframes dashPulse{0%,100%{opacity:.55}50%{opacity:1}}
+@keyframes dashSpin{to{background-position:200px 0}}
+
+/* CONQUEROR'S OWN TILES — bright crown ring, raised */
+.gb.conq{transform:translateY(-2px) scale(1.03);z-index:5;border-color:transparent}
+.gb.conq::after{content:'';position:absolute;inset:0;border-radius:14px;
+  border:2.5px solid var(--gold);pointer-events:none;z-index:4;
+  box-shadow:inset 0 0 14px rgba(255,210,63,.45)}     /* INSET glow only */
+.gb.conq::before{content:'⚔';position:absolute;top:3px;right:5px;font-size:11px;z-index:5;opacity:.9}
+
+/* ATTACKABLE TARGETS — pulsing inset danger ring + dim scrim so they pop */
+.gb.target{cursor:pointer;z-index:6}
+.gb.target::after{content:'';position:absolute;inset:0;border-radius:14px;
+  border:2.5px solid #ff5470;pointer-events:none;z-index:4;
+  box-shadow:inset 0 0 16px rgba(255,84,112,.5);
+  animation:targetPulse 1.1s ease-in-out infinite}
+.gb.target::before{content:'🎯';position:absolute;top:3px;right:5px;font-size:12px;z-index:5}
+@keyframes targetPulse{0%,100%{opacity:.7}50%{opacity:1}}
+.gb.target:active{transform:scale(.95)}
+
+/* tile capture pop */
+.gb.just-won{animation:capturePop .55s cubic-bezier(.2,.9,.3,1.4)}
+@keyframes capturePop{0%{transform:scale(.6);opacity:.3}60%{transform:scale(1.12)}100%{transform:scale(1)}}
+
+.board-wrap{flex:1;display:flex;flex-direction:column;gap:14px;justify-content:center}
+.stage-flash{text-align:center;font-family:'Anton';font-size:clamp(18px,4.5vw,30px);color:var(--gold);padding:6px;
+  letter-spacing:.5px;text-shadow:0 2px 12px rgba(255,210,63,.35);animation:flashIn .4s ease}
+@keyframes flashIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+.stage-center{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:10px}
+.big-emoji{font-size:60px}
+
+.mini-scores{display:flex;flex-wrap:wrap;gap:7px;justify-content:center}
+.ms-chip{display:inline-flex;align-items:center;gap:7px;background:rgba(20,26,58,.8);border-radius:99px;padding:6px 14px;font-size:12px;font-weight:800;border:1px solid rgba(255,255,255,.06)}
+.ms-chip .sw{width:11px;height:11px;border-radius:4px;background:var(--pc);box-shadow:0 0 0 2px color-mix(in srgb,var(--pc) 30%, transparent)}
+.ms-chip b{color:#fff;background:var(--pc);padding:1px 7px;border-radius:99px;font-size:11px;margin-left:2px}
+.ms-chip.out{opacity:.4;text-decoration:line-through}
+
+/* ---- Judge conquest ---- */
+.conq-name{font-family:'Anton';font-size:28px;margin:4px 0 8px}
+.duel-clocks{display:flex;gap:10px;margin-bottom:10px}
+.dc{flex:1;background:var(--bg2);border:2px solid var(--line);border-radius:12px;padding:10px;text-align:center;border-left:6px solid var(--sc);transition:box-shadow .25s,transform .25s}
+.dc span{display:block;font-size:12px;color:var(--muted);font-weight:700}
+.dc b{font-family:'Anton';font-size:30px}
+.dc b.low{color:var(--bad)}
+.dc.on{box-shadow:inset 0 0 0 2px var(--gold);transform:translateY(-2px)}
+.dc.on b{color:var(--gold)}
+
+/* ---- Duel countdown overlay ---- */
+.countdown{position:fixed;inset:0;z-index:80;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  background:radial-gradient(circle at 50% 45%, rgba(20,26,58,.96), rgba(5,8,25,.99));backdrop-filter:blur(6px)}
+.countdown .cd-vs{font-family:'Anton';font-size:clamp(20px,5vw,34px);color:var(--muted);letter-spacing:2px;margin-bottom:6px;text-transform:uppercase}
+.countdown .cd-vs b{color:#fff}
+.countdown .cd-cat{font-family:'Anton';font-size:clamp(24px,7vw,46px);color:var(--gold);margin-bottom:18px;text-transform:uppercase;letter-spacing:1px}
+.countdown .cd-num{font-family:'Anton';font-size:clamp(90px,30vw,200px);line-height:.9;color:#fff;
+  text-shadow:0 0 40px rgba(255,210,63,.5)}
+.cd-num.go{color:var(--good)}
+.cd-pop{animation:cdPop .9s cubic-bezier(.2,.8,.2,1)}
+@keyframes cdPop{0%{transform:scale(2.2);opacity:0}25%{transform:scale(1);opacity:1}80%{transform:scale(1);opacity:1}100%{transform:scale(.5);opacity:0}}
+
+/* ---- Sound toggle ---- */
+.snd-toggle{background:rgba(20,26,58,.85);border:1px solid var(--line);color:var(--ink);border-radius:99px;
+  width:40px;height:40px;font-size:18px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center}
+.snd-toggle.off{opacity:.5}
+
+/* ---- View transitions ---- */
+#stageScreen,#judgeScreen{animation:viewFade .35s ease}
+@keyframes viewFade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.qstage{animation:viewFade .4s ease}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="toastHost"></div>
+
+<!-- content.js injected below by build -->
+<script id="contentScript">
+// Game content: 50 categories x 25 answers each (1250 total)
+// Each answer: [displayName, wikipediaTitle] - image fetched live from Wikipedia
+const GAME_CONTENT = {"Hollywood Actors":[["Bradley Cooper","Bradley Cooper"],["Leonardo DiCaprio","Leonardo DiCaprio"],["Tom Hanks","Tom Hanks"],["Denzel Washington","Denzel Washington"],["Brad Pitt","Brad Pitt"],["Morgan Freeman","Morgan Freeman"],["Robert De Niro","Robert De Niro"],["Al Pacino","Al Pacino"],["Johnny Depp","Johnny Depp"],["Will Smith","Will Smith"],["Tom Cruise","Tom Cruise"],["Keanu Reeves","Keanu Reeves"],["Samuel L. Jackson","Samuel L. Jackson"],["Matt Damon","Matt Damon"],["Ryan Gosling","Ryan Gosling"],["Hugh Jackman","Hugh Jackman"],["Christian Bale","Christian Bale"],["Joaquin Phoenix","Joaquin Phoenix"],["Jake Gyllenhaal","Jake Gyllenhaal"],["Chris Hemsworth","Chris Hemsworth"],["Robert Downey Jr.","Robert Downey Jr."],["Mark Wahlberg","Mark Wahlberg"],["Jude Law","Jude Law"],["Daniel Craig","Daniel Craig"],["Idris Elba","Idris Elba"]],"Hollywood Actresses":[["Meryl Streep","Meryl Streep"],["Jennifer Lawrence","Jennifer Lawrence"],["Scarlett Johansson","Scarlett Johansson"],["Angelina Jolie","Angelina Jolie"],["Julia Roberts","Julia Roberts"],["Nicole Kidman","Nicole Kidman"],["Cate Blanchett","Cate Blanchett"],["Charlize Theron","Charlize Theron"],["Emma Stone","Emma Stone"],["Natalie Portman","Natalie Portman"],["Anne Hathaway","Anne Hathaway"],["Sandra Bullock","Sandra Bullock"],["Viola Davis","Viola Davis"],["Margot Robbie","Margot Robbie"],["Emma Watson","Emma Watson"],["Jennifer Aniston","Jennifer Aniston"],["Reese Witherspoon","Reese Witherspoon"],["Kate Winslet","Kate Winslet"],["Halle Berry","Halle Berry"],["Zendaya","Zendaya"],["Jessica Chastain","Jessica Chastain"],["Amy Adams","Amy Adams"],["Sandra Oh","Sandra Oh"],["Florence Pugh","Florence Pugh"],["Saoirse Ronan","Saoirse Ronan"]],"World Flags":[["Japan","Flag of Japan"],["Brazil","Flag of Brazil"],["Canada","Flag of Canada"],["France","Flag of France"],["Germany","Flag of Germany"],["Italy","Flag of Italy"],["United Kingdom","Flag of the United Kingdom"],["United States","Flag of the United States"],["India","Flag of India"],["China","Flag of China"],["Mexico","Flag of Mexico"],["Australia","Flag of Australia"],["South Korea","Flag of South Korea"],["Spain","Flag of Spain"],["Argentina","Flag of Argentina"],["Egypt","Flag of Egypt"],["South Africa","Flag of South Africa"],["Saudi Arabia","Flag of Saudi Arabia"],["Turkey","Flag of Turkey"],["Sweden","Flag of Sweden"],["Switzerland","Flag of Switzerland"],["Greece","Flag of Greece"],["Nigeria","Flag of Nigeria"],["Kenya","Flag of Kenya"],["Portugal","Flag of Portugal"]],"Animals":[["Lion","Lion"],["Tiger","Tiger"],["Elephant","Elephant"],["Giraffe","Giraffe"],["Zebra","Zebra"],["Kangaroo","Kangaroo"],["Panda","Giant panda"],["Penguin","Penguin"],["Dolphin","Dolphin"],["Koala","Koala"],["Cheetah","Cheetah"],["Gorilla","Gorilla"],["Hippopotamus","Hippopotamus"],["Rhinoceros","Rhinoceros"],["Crocodile","Crocodile"],["Octopus","Octopus"],["Owl","Owl"],["Flamingo","Flamingo"],["Polar bear","Polar bear"],["Wolf","Wolf"],["Fox","Fox"],["Camel","Camel"],["Peacock","Peafowl"],["Sloth","Sloth"],["Chameleon","Chameleon"]],"Dog Breeds":[["Labrador Retriever","Labrador Retriever"],["German Shepherd","German Shepherd"],["Golden Retriever","Golden Retriever"],["Bulldog","Bulldog"],["Poodle","Poodle"],["Beagle","Beagle"],["Rottweiler","Rottweiler"],["Dachshund","Dachshund"],["Siberian Husky","Siberian Husky"],["Chihuahua","Chihuahua (dog)"],["Boxer","Boxer (dog)"],["Pug","Pug"],["Border Collie","Border Collie"],["Doberman","Dobermann"],["Great Dane","Great Dane"],["Shih Tzu","Shih Tzu"],["Pomeranian","Pomeranian (dog)"],["Corgi","Pembroke Welsh Corgi"],["Saint Bernard","St. Bernard (dog)"],["Dalmatian","Dalmatian (dog)"],["Australian Shepherd","Australian Shepherd"],["Cocker Spaniel","Cocker Spaniel"],["Maltese","Maltese dog"],["Akita","Akita (dog)"],["Bernese Mountain Dog","Bernese Mountain Dog"]],"Fruits":[["Apple","Apple"],["Banana","Banana"],["Orange","Orange (fruit)"],["Strawberry","Strawberry"],["Pineapple","Pineapple"],["Watermelon","Watermelon"],["Grapes","Grape"],["Mango","Mango"],["Kiwifruit","Kiwifruit"],["Pear","Pear"],["Peach","Peach"],["Cherry","Cherry"],["Lemon","Lemon"],["Pomegranate","Pomegranate"],["Avocado","Avocado"],["Coconut","Coconut"],["Papaya","Papaya"],["Fig","Fig"],["Raspberry","Raspberry"],["Blueberry","Blueberry"],["Plum","Plum"],["Apricot","Apricot"],["Dragonfruit","Pitaya"],["Lychee","Lychee"],["Passionfruit","Passiflora edulis"]],"Vegetables":[["Carrot","Carrot"],["Broccoli","Broccoli"],["Tomato","Tomato"],["Potato","Potato"],["Cucumber","Cucumber"],["Onion","Onion"],["Bell Pepper","Bell pepper"],["Eggplant","Eggplant"],["Spinach","Spinach"],["Cabbage","Cabbage"],["Cauliflower","Cauliflower"],["Corn","Maize"],["Pumpkin","Pumpkin"],["Lettuce","Lettuce"],["Garlic","Garlic"],["Beetroot","Beetroot"],["Celery","Celery"],["Mushroom","Edible mushroom"],["Radish","Radish"],["Asparagus","Asparagus"],["Zucchini","Zucchini"],["Sweet Potato","Sweet potato"],["Peas","Pea"],["Ginger","Ginger"],["Okra","Okra"]],"US Presidents":[["George Washington","George Washington"],["Abraham Lincoln","Abraham Lincoln"],["Thomas Jefferson","Thomas Jefferson"],["Theodore Roosevelt","Theodore Roosevelt"],["Franklin D. Roosevelt","Franklin D. Roosevelt"],["John F. Kennedy","John F. Kennedy"],["Ronald Reagan","Ronald Reagan"],["Barack Obama","Barack Obama"],["Bill Clinton","Bill Clinton"],["George W. Bush","George W. Bush"],["Richard Nixon","Richard Nixon"],["Dwight D. Eisenhower","Dwight D. Eisenhower"],["Harry S. Truman","Harry S. Truman"],["Jimmy Carter","Jimmy Carter"],["Gerald Ford","Gerald Ford"],["Lyndon B. Johnson","Lyndon B. Johnson"],["Ulysses S. Grant","Ulysses S. Grant"],["Andrew Jackson","Andrew Jackson"],["James Madison","James Madison"],["John Adams","John Adams"],["Woodrow Wilson","Woodrow Wilson"],["Herbert Hoover","Herbert Hoover"],["Calvin Coolidge","Calvin Coolidge"],["William Taft","William Howard Taft"],["Joe Biden","Joe Biden"]],"World Landmarks":[["Eiffel Tower","Eiffel Tower"],["Statue of Liberty","Statue of Liberty"],["Great Wall of China","Great Wall of China"],["Taj Mahal","Taj Mahal"],["Colosseum","Colosseum"],["Big Ben","Big Ben"],["Sydney Opera House","Sydney Opera House"],["Christ the Redeemer","Christ the Redeemer (statue)"],["Pyramids of Giza","Giza pyramid complex"],["Leaning Tower of Pisa","Leaning Tower of Pisa"],["Golden Gate Bridge","Golden Gate Bridge"],["Mount Rushmore","Mount Rushmore"],["Machu Picchu","Machu Picchu"],["Burj Khalifa","Burj Khalifa"],["Petra","Petra"],["Stonehenge","Stonehenge"],["Brandenburg Gate","Brandenburg Gate"],["Sagrada Familia","Sagrada Família"],["Acropolis","Acropolis of Athens"],["Tower Bridge","Tower Bridge"],["Empire State Building","Empire State Building"],["Sphinx","Great Sphinx of Giza"],["Angkor Wat","Angkor Wat"],["Neuschwanstein Castle","Neuschwanstein Castle"],["Chichen Itza","Chichen Itza"]],"Musicians & Singers":[["Michael Jackson","Michael Jackson"],["Beyonce","Beyoncé"],["Elvis Presley","Elvis Presley"],["Madonna","Madonna"],["Freddie Mercury","Freddie Mercury"],["Taylor Swift","Taylor Swift"],["Bob Marley","Bob Marley"],["Adele","Adele"],["Elton John","Elton John"],["Rihanna","Rihanna"],["Bruno Mars","Bruno Mars"],["Lady Gaga","Lady Gaga"],["Ed Sheeran","Ed Sheeran"],["Drake","Drake (musician)"],["Stevie Wonder","Stevie Wonder"],["Whitney Houston","Whitney Houston"],["David Bowie","David Bowie"],["Prince","Prince (musician)"],["Justin Bieber","Justin Bieber"],["Ariana Grande","Ariana Grande"],["Billie Eilish","Billie Eilish"],["Bob Dylan","Bob Dylan"],["Frank Sinatra","Frank Sinatra"],["Eminem","Eminem"],["The Weeknd","The Weeknd"]],"Sports Stars":[["Lionel Messi","Lionel Messi"],["Cristiano Ronaldo","Cristiano Ronaldo"],["LeBron James","LeBron James"],["Michael Jordan","Michael Jordan"],["Serena Williams","Serena Williams"],["Roger Federer","Roger Federer"],["Usain Bolt","Usain Bolt"],["Tom Brady","Tom Brady"],["Tiger Woods","Tiger Woods"],["Muhammad Ali","Muhammad Ali"],["Rafael Nadal","Rafael Nadal"],["Kobe Bryant","Kobe Bryant"],["Neymar","Neymar"],["Stephen Curry","Stephen Curry"],["Lewis Hamilton","Lewis Hamilton"],["Floyd Mayweather","Floyd Mayweather Jr."],["Novak Djokovic","Novak Djokovic"],["Kylian Mbappe","Kylian Mbappé"],["Shaquille O'Neal","Shaquille O'Neal"],["David Beckham","David Beckham"],["Conor McGregor","Conor McGregor"],["Simone Biles","Simone Biles"],["Naomi Osaka","Naomi Osaka"],["Mike Tyson","Mike Tyson"],["Pele","Pelé"]],"Car Logos":[["Ferrari","Ferrari"],["Lamborghini","Lamborghini"],["Toyota","Toyota"],["BMW","BMW"],["Mercedes-Benz","Mercedes-Benz"],["Audi","Audi"],["Ford","Ford Motor Company"],["Honda","Honda"],["Volkswagen","Volkswagen"],["Porsche","Porsche"],["Tesla","Tesla, Inc."],["Chevrolet","Chevrolet"],["Nissan","Nissan"],["Jaguar","Jaguar Cars"],["Bentley","Bentley"],["Rolls-Royce","Rolls-Royce Motor Cars"],["Maserati","Maserati"],["Bugatti","Bugatti"],["Aston Martin","Aston Martin"],["Hyundai","Hyundai Motor Company"],["Kia","Kia"],["Mazda","Mazda"],["Subaru","Subaru"],["Volvo","Volvo Cars"],["Jeep","Jeep"]],"Birds":[["Eagle","Eagle"],["Owl","Owl"],["Flamingo","Flamingo"],["Peacock","Peafowl"],["Penguin","Penguin"],["Parrot","Parrot"],["Swan","Swan"],["Pelican","Pelican"],["Toucan","Toucan"],["Ostrich","Common ostrich"],["Hummingbird","Hummingbird"],["Robin","European robin"],["Woodpecker","Woodpecker"],["Pigeon","Columbidae"],["Crow","Crow"],["Seagull","Gull"],["Kingfisher","Kingfisher"],["Falcon","Falcon"],["Vulture","Vulture"],["Stork","Stork"],["Cardinal","Northern cardinal"],["Crane","Crane (bird)"],["Heron","Heron"],["Duck","Duck"],["Sparrow","Sparrow"]],"Famous Paintings":[["Mona Lisa","Mona Lisa"],["The Starry Night","The Starry Night"],["The Scream","The Scream"],["Girl with a Pearl Earring","Girl with a Pearl Earring"],["The Last Supper","The Last Supper (Leonardo)"],["The Persistence of Memory","The Persistence of Memory"],["Guernica","Guernica (Picasso)"],["American Gothic","American Gothic"],["The Birth of Venus","The Birth of Venus"],["The Kiss","The Kiss (Klimt)"],["Water Lilies","Water Lilies"],["The Night Watch","The Night Watch"],["Sunflowers","Sunflowers (Van Gogh series)"],["The Creation of Adam","The Creation of Adam"],["Las Meninas","Las Meninas"],["Whistler's Mother","Whistler's Mother"],["The Great Wave off Kanagawa","The Great Wave off Kanagawa"],["Cafe Terrace at Night","Café Terrace at Night"],["The School of Athens","The School of Athens"],["Liberty Leading the People","Liberty Leading the People"],["Nighthawks","Nighthawks"],["The Garden of Earthly Delights","The Garden of Earthly Delights"],["Bal du moulin de la Galette","Bal du moulin de la Galette"],["Composition with Red Blue and Yellow","Composition with Red, Blue and Yellow"],["The Son of Man","The Son of Man"]],"Tech Company Logos":[["Apple","Apple Inc."],["Google","Google"],["Microsoft","Microsoft"],["Amazon","Amazon (company)"],["Meta","Meta Platforms"],["Netflix","Netflix"],["Spotify","Spotify"],["Adobe","Adobe Inc."],["Intel","Intel"],["IBM","IBM"],["Oracle","Oracle Corporation"],["Samsung","Samsung"],["Sony","Sony"],["Nvidia","Nvidia"],["Twitter","Twitter"],["Uber","Uber"],["Airbnb","Airbnb"],["PayPal","PayPal"],["Dropbox","Dropbox"],["Slack","Slack Technologies"],["Zoom","Zoom Video Communications"],["LinkedIn","LinkedIn"],["Pinterest","Pinterest"],["Snapchat","Snap Inc."],["TikTok","TikTok"]],"Planets & Space":[["Earth","Earth"],["Mars","Mars"],["Jupiter","Jupiter"],["Saturn","Saturn"],["Mercury","Mercury (planet)"],["Venus","Venus"],["Neptune","Neptune"],["Uranus","Uranus"],["The Moon","Moon"],["The Sun","Sun"],["Pluto","Pluto"],["Milky Way","Milky Way"],["Halley's Comet","Halley's Comet"],["International Space Station","International Space Station"],["Hubble Telescope","Hubble Space Telescope"],["Apollo 11","Apollo 11"],["Space Shuttle","Space Shuttle"],["Saturn's Rings","Rings of Saturn"],["Andromeda Galaxy","Andromeda Galaxy"],["Solar Eclipse","Solar eclipse"],["Asteroid Belt","Asteroid belt"],["Black Hole","Black hole"],["Mars Rover","Mars rover"],["Voyager","Voyager 1"],["Orion Nebula","Orion Nebula"]],"Musical Instruments":[["Guitar","Guitar"],["Piano","Piano"],["Violin","Violin"],["Drums","Drum kit"],["Saxophone","Saxophone"],["Trumpet","Trumpet"],["Flute","Western concert flute"],["Cello","Cello"],["Harp","Harp"],["Accordion","Accordion"],["Clarinet","Clarinet"],["Trombone","Trombone"],["Banjo","Banjo"],["Ukulele","Ukulele"],["Double Bass","Double bass"],["Tuba","Tuba"],["Harmonica","Harmonica"],["Bagpipes","Bagpipes"],["Xylophone","Xylophone"],["Mandolin","Mandolin"],["Tambourine","Tambourine"],["Organ","Organ (music)"],["French Horn","French horn"],["Bongo Drums","Bongo drum"],["Sitar","Sitar"]],"Capital Cities":[["Paris","Paris"],["London","London"],["Tokyo","Tokyo"],["Rome","Rome"],["Cairo","Cairo"],["Moscow","Moscow"],["Washington D.C.","Washington, D.C."],["Beijing","Beijing"],["Berlin","Berlin"],["Madrid","Madrid"],["Athens","Athens"],["Amsterdam","Amsterdam"],["Vienna","Vienna"],["Dubai","Dubai"],["Bangkok","Bangkok"],["Istanbul","Istanbul"],["Sydney","Sydney"],["Rio de Janeiro","Rio de Janeiro"],["New Delhi","New Delhi"],["Singapore","Singapore"],["Seoul","Seoul"],["Mexico City","Mexico City"],["Toronto","Toronto"],["Barcelona","Barcelona"],["Venice","Venice"]],"Cartoon Characters":[["Mickey Mouse","Mickey Mouse"],["Bugs Bunny","Bugs Bunny"],["SpongeBob SquarePants","SpongeBob SquarePants"],["Homer Simpson","Homer Simpson"],["Pikachu","Pikachu"],["Scooby-Doo","Scooby-Doo"],["Tom and Jerry","Tom and Jerry"],["Donald Duck","Donald Duck"],["Garfield","Garfield"],["Snoopy","Snoopy"],["Popeye","Popeye"],["Bart Simpson","Bart Simpson"],["Daffy Duck","Daffy Duck"],["Goofy","Goofy"],["Woody Woodpecker","Woody Woodpecker"],["Felix the Cat","Felix the Cat"],["Betty Boop","Betty Boop"],["Road Runner","Wile E. Coyote and the Road Runner"],["Tweety","Tweety"],["Porky Pig","Porky Pig"],["Yogi Bear","Yogi Bear"],["Fred Flintstone","Fred Flintstone"],["Winnie the Pooh","Winnie-the-Pooh"],["Spider-Man","Spider-Man"],["Batman","Batman"]],"Insects & Bugs":[["Butterfly","Butterfly"],["Bee","Bee"],["Ant","Ant"],["Ladybug","Coccinellidae"],["Dragonfly","Dragonfly"],["Grasshopper","Grasshopper"],["Beetle","Beetle"],["Mosquito","Mosquito"],["Spider","Spider"],["Caterpillar","Caterpillar"],["Cricket","Cricket (insect)"],["Wasp","Wasp"],["Moth","Moth"],["Cockroach","Cockroach"],["Praying Mantis","Mantis"],["Firefly","Firefly"],["Scorpion","Scorpion"],["Centipede","Centipede"],["Snail","Snail"],["Termite","Termite"],["Tarantula","Tarantula"],["Stick Insect","Phasmatodea"],["Housefly","Housefly"],["Flea","Flea"],["Earthworm","Earthworm"]],"Currencies & Banknotes":[["US Dollar","United States dollar"],["Euro","Euro"],["British Pound","Pound sterling"],["Japanese Yen","Japanese yen"],["Swiss Franc","Swiss franc"],["Canadian Dollar","Canadian dollar"],["Australian Dollar","Australian dollar"],["Indian Rupee","Indian rupee"],["Chinese Yuan","Renminbi"],["Saudi Riyal","Saudi riyal"],["Russian Ruble","Russian ruble"],["Brazilian Real","Brazilian real"],["Mexican Peso","Mexican peso"],["South Korean Won","South Korean won"],["Turkish Lira","Turkish lira"],["South African Rand","South African rand"],["Egyptian Pound","Egyptian pound"],["Norwegian Krone","Norwegian krone"],["Swedish Krona","Swedish krona"],["Thai Baht","Thai baht"],["UAE Dirham","United Arab Emirates dirham"],["Singapore Dollar","Singapore dollar"],["Hong Kong Dollar","Hong Kong dollar"],["Polish Zloty","Polish złoty"],["Israeli Shekel","Israeli new shekel"]],"Trees & Plants":[["Oak","Oak"],["Pine","Pine"],["Palm Tree","Arecaceae"],["Maple","Maple"],["Bamboo","Bamboo"],["Cactus","Cactus"],["Willow","Willow"],["Birch","Birch"],["Redwood","Sequoia (genus)"],["Cherry Blossom","Cherry blossom"],["Baobab","Adansonia"],["Bonsai","Bonsai"],["Fern","Fern"],["Eucalyptus","Eucalyptus"],["Sunflower","Common sunflower"],["Rose","Rose"],["Tulip","Tulip"],["Orchid","Orchidaceae"],["Lavender","Lavandula"],["Lotus","Nelumbo nucifera"],["Venus Flytrap","Venus flytrap"],["Olive Tree","Olive"],["Sequoia","Sequoiadendron"],["Daffodil","Narcissus (plant)"],["Ivy","Hedera"]],"Famous Scientists":[["Albert Einstein","Albert Einstein"],["Isaac Newton","Isaac Newton"],["Charles Darwin","Charles Darwin"],["Marie Curie","Marie Curie"],["Nikola Tesla","Nikola Tesla"],["Galileo Galilei","Galileo Galilei"],["Stephen Hawking","Stephen Hawking"],["Thomas Edison","Thomas Edison"],["Nicolaus Copernicus","Nicolaus Copernicus"],["Louis Pasteur","Louis Pasteur"],["Alexander Graham Bell","Alexander Graham Bell"],["Michael Faraday","Michael Faraday"],["Gregor Mendel","Gregor Mendel"],["Niels Bohr","Niels Bohr"],["Max Planck","Max Planck"],["Carl Sagan","Carl Sagan"],["Alan Turing","Alan Turing"],["James Watson","James Watson"],["Rosalind Franklin","Rosalind Franklin"],["Richard Feynman","Richard Feynman"],["Erwin Schrodinger","Erwin Schrödinger"],["Robert Oppenheimer","J. Robert Oppenheimer"],["Ada Lovelace","Ada Lovelace"],["Werner Heisenberg","Werner Heisenberg"],["Jane Goodall","Jane Goodall"]],"Sea Creatures":[["Shark","Shark"],["Whale","Whale"],["Dolphin","Dolphin"],["Octopus","Octopus"],["Jellyfish","Jellyfish"],["Starfish","Starfish"],["Seahorse","Seahorse"],["Crab","Crab"],["Lobster","Lobster"],["Sea Turtle","Sea turtle"],["Stingray","Batoidea"],["Clownfish","Clownfish"],["Pufferfish","Tetraodontidae"],["Squid","Squid"],["Manatee","Manatee"],["Walrus","Walrus"],["Sea Otter","Sea otter"],["Eel","Eel"],["Swordfish","Swordfish"],["Orca","Orca"],["Seal","Pinniped"],["Coral","Coral"],["Anglerfish","Anglerfish"],["Hammerhead Shark","Hammerhead shark"],["Blue Whale","Blue whale"]],"Board & Video Games":[["Chess","Chess"],["Monopoly","Monopoly (game)"],["Scrabble","Scrabble"],["Tetris","Tetris"],["Pac-Man","Pac-Man"],["Minecraft","Minecraft"],["Super Mario","Super Mario"],["Checkers","Draughts"],["Poker","Poker"],["Sudoku","Sudoku"],["Rubik's Cube","Rubik's Cube"],["Jenga","Jenga"],["Risk","Risk (game)"],["Clue","Cluedo"],["Connect Four","Connect Four"],["Backgammon","Backgammon"],["Domino","Dominoes"],["Solitaire","Solitaire"],["Space Invaders","Space Invaders"],["Pong","Pong"],["Battleship","Battleship (game)"],["Uno","Uno (card game)"],["Mahjong","Mahjong"],["Dominoes","Dominoes"],["Go","Go (game)"]],"Tools & Hardware":[["Hammer","Hammer"],["Screwdriver","Screwdriver"],["Wrench","Wrench"],["Saw","Saw"],["Drill","Drill"],["Pliers","Pliers"],["Tape Measure","Tape measure"],["Level","Spirit level"],["Chisel","Chisel"],["Axe","Axe"],["Shovel","Shovel"],["Ladder","Ladder"],["Paintbrush","Paintbrush"],["Nail","Nail (fastener)"],["Screw","Screw"],["Bolt","Bolt (fastener)"],["Hand Plane","Plane (tool)"],["File","File (tool)"],["Clamp","Clamp (tool)"],["Crowbar","Crowbar (tool)"],["Sandpaper","Sandpaper"],["Pickaxe","Pickaxe"],["Sledgehammer","Sledgehammer"],["Mallet","Mallet"],["Vise","Vise"]],"Famous Buildings & Architecture":[["White House","White House"],["Buckingham Palace","Buckingham Palace"],["The Pentagon","The Pentagon"],["Sydney Harbour Bridge","Sydney Harbour Bridge"],["Petronas Towers","Petronas Towers"],["Chrysler Building","Chrysler Building"],["Flatiron Building","Flatiron Building"],["Notre-Dame","Notre-Dame de Paris"],["Hagia Sophia","Hagia Sophia"],["St. Peter's Basilica","St. Peter's Basilica"],["The Louvre","Louvre"],["Guggenheim Museum","Guggenheim Museum Bilbao"],["One World Trade Center","One World Trade Center"],["Shard","The Shard"],["Marina Bay Sands","Marina Bay Sands"],["Forbidden City","Forbidden City"],["Westminster Abbey","Westminster Abbey"],["Kremlin","Moscow Kremlin"],["Saint Basil's Cathedral","Saint Basil's Cathedral"],["Willis Tower","Willis Tower"],["CN Tower","CN Tower"],["Space Needle","Space Needle"],["Gateway Arch","Gateway Arch"],["Lincoln Memorial","Lincoln Memorial"],["Pantheon","Pantheon, Rome"]],"Desserts & Sweets":[["Chocolate Cake","Chocolate cake"],["Ice Cream","Ice cream"],["Donut","Doughnut"],["Cupcake","Cupcake"],["Cheesecake","Cheesecake"],["Macaron","Macaron"],["Tiramisu","Tiramisu"],["Brownie","Chocolate brownie"],["Pancakes","Pancake"],["Waffle","Waffle"],["Croissant","Croissant"],["Cookie","Cookie"],["Pie","Pie"],["Pudding","Pudding"],["Gelato","Gelato"],["Cotton Candy","Cotton candy"],["Churros","Churro"],["Eclair","Éclair"],["Muffin","Muffin"],["Pretzel","Pretzel"],["Baklava","Baklava"],["Creme Brulee","Crème brûlée"],["Jelly","Gelatin dessert"],["Marshmallow","Marshmallow"],["Fudge","Fudge"]],"Kitchen Items":[["Knife","Kitchen knife"],["Fork","Fork"],["Spoon","Spoon"],["Plate","Plate (dishware)"],["Cup","Cup"],["Bowl","Bowl"],["Pot","Cookware and bakeware"],["Frying Pan","Frying pan"],["Kettle","Kettle"],["Toaster","Toaster"],["Blender","Blender"],["Microwave","Microwave oven"],["Refrigerator","Refrigerator"],["Oven","Oven"],["Whisk","Whisk"],["Spatula","Spatula"],["Rolling Pin","Rolling pin"],["Grater","Grater"],["Colander","Colander"],["Cutting Board","Cutting board"],["Ladle","Ladle (spoon)"],["Teapot","Teapot"],["Corkscrew","Corkscrew"],["Mug","Mug"],["Chopsticks","Chopsticks"]],"Famous Mountains & Rivers":[["Mount Everest","Mount Everest"],["Mount Fuji","Mount Fuji"],["Kilimanjaro","Mount Kilimanjaro"],["Matterhorn","Matterhorn"],["Mount Rainier","Mount Rainier"],["Denali","Denali"],["K2","K2"],["Mont Blanc","Mont Blanc"],["Amazon River","Amazon River"],["Nile River","Nile"],["Mississippi River","Mississippi River"],["Yangtze River","Yangtze"],["Niagara Falls","Niagara Falls"],["Victoria Falls","Victoria Falls"],["Grand Canyon","Grand Canyon"],["Mount Vesuvius","Mount Vesuvius"],["Table Mountain","Table Mountain"],["Mount Etna","Mount Etna"],["Half Dome","Half Dome"],["Mount Sinai","Mount Sinai"],["Angel Falls","Angel Falls"],["Danube","Danube"],["Ganges","Ganges"],["Colorado River","Colorado River"],["Iguazu Falls","Iguazu Falls"]],"World Leaders & Politicians":[["Winston Churchill","Winston Churchill"],["Mahatma Gandhi","Mahatma Gandhi"],["Nelson Mandela","Nelson Mandela"],["Queen Elizabeth II","Elizabeth II"],["Abraham Lincoln","Abraham Lincoln"],["Martin Luther King Jr.","Martin Luther King Jr."],["Margaret Thatcher","Margaret Thatcher"],["Vladimir Putin","Vladimir Putin"],["Angela Merkel","Angela Merkel"],["Napoleon Bonaparte","Napoleon"],["Julius Caesar","Julius Caesar"],["Cleopatra","Cleopatra"],["Che Guevara","Che Guevara"],["Pope Francis","Pope Francis"],["Dalai Lama","14th Dalai Lama"],["Emmanuel Macron","Emmanuel Macron"],["Justin Trudeau","Justin Trudeau"],["King Charles III","Charles III"],["Theodore Roosevelt","Theodore Roosevelt"],["Charles de Gaulle","Charles de Gaulle"],["Mikhail Gorbachev","Mikhail Gorbachev"],["Indira Gandhi","Indira Gandhi"],["Kemal Ataturk","Mustafa Kemal Atatürk"],["Eva Peron","Eva Perón"],["Benjamin Franklin","Benjamin Franklin"]],"Famous Authors & Writers":[["William Shakespeare","William Shakespeare"],["Mark Twain","Mark Twain"],["Charles Dickens","Charles Dickens"],["Jane Austen","Jane Austen"],["Ernest Hemingway","Ernest Hemingway"],["J.K. Rowling","J. K. Rowling"],["George Orwell","George Orwell"],["Leo Tolstoy","Leo Tolstoy"],["Edgar Allan Poe","Edgar Allan Poe"],["Agatha Christie","Agatha Christie"],["F. Scott Fitzgerald","F. Scott Fitzgerald"],["Stephen King","Stephen King"],["J.R.R. Tolkien","J. R. R. Tolkien"],["Maya Angelou","Maya Angelou"],["Oscar Wilde","Oscar Wilde"],["Virginia Woolf","Virginia Woolf"],["Fyodor Dostoevsky","Fyodor Dostoevsky"],["Gabriel Garcia Marquez","Gabriel García Márquez"],["Franz Kafka","Franz Kafka"],["Emily Dickinson","Emily Dickinson"],["Toni Morrison","Toni Morrison"],["Roald Dahl","Roald Dahl"],["Herman Melville","Herman Melville"],["Victor Hugo","Victor Hugo"],["Dr. Seuss","Dr. Seuss"]],"Sports Equipment":[["Basketball","Basketball (ball)"],["Soccer Ball","Ball (association football)"],["Tennis Racket","Racket (sports equipment)"],["Baseball Bat","Baseball bat"],["Golf Club","Golf club"],["Hockey Stick","Hockey stick"],["Boxing Gloves","Boxing glove"],["Skateboard","Skateboard"],["Surfboard","Surfboard"],["Skis","Ski"],["Football Helmet","Football helmet"],["Dumbbell","Dumbbell"],["Bowling Pin","Bowling pin"],["Dartboard","Darts"],["Ping Pong Paddle","Table tennis racket"],["Cricket Bat","Cricket bat"],["Volleyball","Volleyball (ball)"],["Frisbee","Frisbee"],["Snowboard","Snowboard"],["Roller Skates","Roller skates"],["Catcher's Mitt","Baseball glove"],["Badminton Racket","Badminton"],["Whistle","Whistle"],["Stopwatch","Stopwatch"],["Trophy","Trophy"]],"Gemstones & Minerals":[["Diamond","Diamond"],["Ruby","Ruby"],["Emerald","Emerald"],["Sapphire","Sapphire"],["Amethyst","Amethyst"],["Topaz","Topaz"],["Opal","Opal"],["Pearl","Pearl"],["Jade","Jade"],["Turquoise","Turquoise"],["Garnet","Garnet"],["Aquamarine","Aquamarine (gem)"],["Quartz","Quartz"],["Amber","Amber"],["Onyx","Onyx"],["Gold","Gold"],["Silver","Silver"],["Platinum","Platinum"],["Copper","Copper"],["Obsidian","Obsidian"],["Coral","Coral"],["Citrine","Citrine"],["Tanzanite","Tanzanite"],["Malachite","Malachite"],["Lapis Lazuli","Lapis lazuli"]],"Weather & Natural Phenomena":[["Rainbow","Rainbow"],["Tornado","Tornado"],["Lightning","Lightning"],["Hurricane","Tropical cyclone"],["Snowflake","Snowflake"],["Aurora Borealis","Aurora"],["Volcano","Volcano"],["Tsunami","Tsunami"],["Sandstorm","Dust storm"],["Fog","Fog"],["Hailstone","Hail"],["Waterfall","Waterfall"],["Geyser","Geyser"],["Avalanche","Avalanche"],["Solar Eclipse","Solar eclipse"],["Cloud","Cloud"],["Iceberg","Iceberg"],["Glacier","Glacier"],["Whirlpool","Whirlpool"],["Sunset","Sunset"],["Earthquake","Earthquake"],["Flood","Flood"],["Drought","Drought"],["Monsoon","Monsoon"],["Frost","Frost"]],"Modes of Transport":[["Airplane","Airplane"],["Helicopter","Helicopter"],["Train","Train"],["Bicycle","Bicycle"],["Motorcycle","Motorcycle"],["Bus","Bus"],["Ship","Ship"],["Submarine","Submarine"],["Hot Air Balloon","Hot air balloon"],["Sailboat","Sailboat"],["Tractor","Tractor"],["Ambulance","Ambulance"],["Fire Truck","Fire engine"],["Taxi","Taxicab"],["Subway","Rapid transit"],["Tram","Tram"],["Gondola","Gondola"],["Canoe","Canoe"],["Scooter","Scooter (motorcycle)"],["Cruise Ship","Cruise ship"],["Cable Car","Cable car"],["Rickshaw","Rickshaw"],["Jet Ski","Personal water craft"],["Segway","Segway"],["Monorail","Monorail"]],"Office & School Supplies":[["Pencil","Pencil"],["Pen","Pen"],["Eraser","Eraser"],["Stapler","Stapler"],["Scissors","Scissors"],["Ruler","Ruler"],["Notebook","Notebook"],["Calculator","Calculator"],["Paperclip","Paper clip"],["Highlighter","Highlighter"],["Glue Stick","Glue stick"],["Tape Dispenser","Adhesive tape"],["Whiteboard","Whiteboard"],["Backpack","Backpack"],["Compass","Compass (drawing tool)"],["Protractor","Protractor"],["Hole Punch","Hole punch"],["Pencil Sharpener","Pencil sharpener"],["Globe","Globe"],["Chalk","Chalk"],["Push Pin","Drawing pin"],["Marker","Marker pen"],["Binder","Ring binder"],["Sticky Notes","Post-it Note"],["Crayon","Crayon"]],"Hats & Headwear":[["Top Hat","Top hat"],["Cowboy Hat","Cowboy hat"],["Baseball Cap","Baseball cap"],["Beret","Beret"],["Fedora","Fedora"],["Sombrero","Sombrero"],["Crown","Crown (headgear)"],["Turban","Turban"],["Beanie","Knit cap"],["Helmet","Helmet"],["Graduation Cap","Square academic cap"],["Chef's Hat","Toque"],["Bowler Hat","Bowler hat"],["Straw Hat","Straw hat"],["Hard Hat","Hard hat"],["Tiara","Tiara"],["Sun Hat","Sun hat"],["Panama Hat","Panama hat"],["Bicorne","Bicorne"],["Fez","Fez (hat)"],["Headband","Headband"],["Veil","Veil"],["Pith Helmet","Pith helmet"],["Bonnet","Bonnet (headgear)"],["Visor","Visor"]],"Mythical Creatures":[["Dragon","Dragon"],["Unicorn","Unicorn"],["Phoenix","Phoenix (mythology)"],["Mermaid","Mermaid"],["Centaur","Centaur"],["Minotaur","Minotaur"],["Griffin","Griffin"],["Pegasus","Pegasus"],["Medusa","Medusa"],["Cyclops","Cyclops"],["Sphinx","Sphinx"],["Werewolf","Werewolf"],["Vampire","Vampire"],["Kraken","Kraken"],["Hydra","Lernaean Hydra"],["Cerberus","Cerberus"],["Fairy","Fairy"],["Goblin","Goblin"],["Troll","Troll"],["Yeti","Yeti"],["Loch Ness Monster","Loch Ness Monster"],["Chimera","Chimera (mythology)"],["Banshee","Banshee"],["Gargoyle","Gargoyle"],["Genie","Genie"]],"Famous Bridges":[["Golden Gate Bridge","Golden Gate Bridge"],["Tower Bridge","Tower Bridge"],["Brooklyn Bridge","Brooklyn Bridge"],["Sydney Harbour Bridge","Sydney Harbour Bridge"],["Ponte Vecchio","Ponte Vecchio"],["Rialto Bridge","Rialto Bridge"],["Charles Bridge","Charles Bridge"],["Millau Viaduct","Millau Viaduct"],["Akashi Kaikyo Bridge","Akashi Kaikyō Bridge"],["Forth Bridge","Forth Bridge"],["London Bridge","London Bridge"],["Hangzhou Bay Bridge","Hangzhou Bay Bridge"],["Bosphorus Bridge","15 July Martyrs Bridge"],["Helix Bridge","Helix Bridge"],["Si-o-se-pol","Si-o-se-pol"],["Khaju Bridge","Khaju Bridge"],["Pont du Gard","Pont du Gard"],["Gateshead Millennium Bridge","Gateshead Millennium Bridge"],["Chengyang Bridge","Chengyang Bridge"],["Banpo Bridge","Banpo Bridge"],["Oresund Bridge","Øresund Bridge"],["Vasco da Gama Bridge","Vasco da Gama Bridge"],["Stari Most","Stari Most"],["Tsing Ma Bridge","Tsing Ma Bridge"],["Confederation Bridge","Confederation Bridge"]],"Comic Book Superheroes":[["Superman","Superman"],["Batman","Batman"],["Spider-Man","Spider-Man"],["Wonder Woman","Wonder Woman"],["Iron Man","Iron Man"],["Captain America","Captain America"],["The Hulk","Hulk"],["Thor","Thor (Marvel Comics)"],["Black Panther","Black Panther (character)"],["Wolverine","Wolverine (character)"],["Flash","Flash (Barry Allen)"],["Aquaman","Aquaman"],["Green Lantern","Green Lantern"],["Deadpool","Deadpool"],["Doctor Strange","Doctor Strange"],["Captain Marvel","Captain Marvel (Marvel Comics)"],["Black Widow","Black Widow (Natasha Romanova)"],["Hawkeye","Hawkeye (Clint Barton)"],["Daredevil","Daredevil (Marvel Comics character)"],["Green Arrow","Green Arrow"],["Ant-Man","Ant-Man (Scott Lang)"],["Cyclops","Cyclops (Marvel Comics)"],["Storm","Storm (Marvel Comics)"],["Robin","Robin (character)"],["Supergirl","Supergirl"]],"Famous Logos & Brands":[["Nike","Nike, Inc."],["Coca-Cola","Coca-Cola"],["McDonald's","McDonald's"],["Adidas","Adidas"],["Starbucks","Starbucks"],["Pepsi","Pepsi"],["Disney","The Walt Disney Company"],["Gucci","Gucci"],["Louis Vuitton","Louis Vuitton"],["Chanel","Chanel"],["Rolex","Rolex"],["Puma","Puma (brand)"],["KFC","KFC"],["Burger King","Burger King"],["Lego","Lego"],["Ikea","IKEA"],["Shell","Shell plc"],["Visa","Visa Inc."],["Mastercard","Mastercard"],["FedEx","FedEx"],["Red Bull","Red Bull"],["Nestle","Nestlé"],["Lacoste","Lacoste"],["Ferrari","Ferrari"],["Heineken","Heineken"]],"Reptiles & Amphibians":[["Crocodile","Crocodile"],["Alligator","Alligator"],["Cobra","Cobra"],["Python","Pythonidae"],["Iguana","Iguana"],["Chameleon","Chameleon"],["Gecko","Gecko"],["Komodo Dragon","Komodo dragon"],["Tortoise","Tortoise"],["Turtle","Turtle"],["Frog","Frog"],["Toad","Toad"],["Salamander","Salamander"],["Newt","Newt"],["Rattlesnake","Rattlesnake"],["Viper","Viperidae"],["Anaconda","Anaconda"],["Bearded Dragon","Pogona"],["Monitor Lizard","Monitor lizard"],["Boa Constrictor","Boa constrictor"],["Tree Frog","Tree frog"],["Sea Snake","Sea snake"],["Horned Lizard","Horned lizard"],["Axolotl","Axolotl"],["Gila Monster","Gila monster"]],"Drinks & Beverages":[["Coffee","Coffee"],["Tea","Tea"],["Orange Juice","Orange juice"],["Milk","Milk"],["Lemonade","Lemonade"],["Smoothie","Smoothie"],["Hot Chocolate","Hot chocolate"],["Soda","Soft drink"],["Milkshake","Milkshake"],["Iced Tea","Iced tea"],["Espresso","Espresso"],["Cappuccino","Cappuccino"],["Latte","Latte"],["Cola","Cola"],["Mineral Water","Mineral water"],["Coconut Water","Coconut water"],["Energy Drink","Energy drink"],["Matcha","Matcha"],["Mojito","Mojito"],["Margarita","Margarita"],["Sangria","Sangria"],["Champagne","Champagne"],["Apple Juice","Apple juice"],["Ginger Ale","Ginger ale"],["Root Beer","Root beer"]],"Clothing & Fashion":[["T-Shirt","T-shirt"],["Jeans","Jeans"],["Dress","Dress"],["Suit","Suit"],["Sweater","Sweater"],["Jacket","Jacket"],["Skirt","Skirt"],["Shorts","Shorts"],["Coat","Coat (clothing)"],["Hoodie","Hoodie"],["Scarf","Scarf"],["Gloves","Glove"],["Socks","Sock"],["Tie","Necktie"],["Belt","Belt (clothing)"],["Sneakers","Sneakers"],["Boots","Boot"],["High Heels","High-heeled shoe"],["Sandals","Sandal"],["Hat","Hat"],["Sunglasses","Sunglasses"],["Bow Tie","Bow tie"],["Vest","Waistcoat"],["Kimono","Kimono"],["Pajamas","Pajamas"]],"Famous Cats & Big Cats":[["Lion","Lion"],["Tiger","Tiger"],["Leopard","Leopard"],["Cheetah","Cheetah"],["Jaguar","Jaguar"],["Cougar","Cougar"],["Lynx","Lynx"],["Panther","Black panther"],["Snow Leopard","Snow leopard"],["Bobcat","Bobcat"],["Persian Cat","Persian cat"],["Siamese Cat","Siamese cat"],["Maine Coon","Maine Coon"],["Bengal Cat","Bengal cat"],["Sphynx Cat","Sphynx cat"],["Ragdoll","Ragdoll"],["British Shorthair","British Shorthair"],["Scottish Fold","Scottish Fold"],["Tabby Cat","Tabby cat"],["Caracal","Caracal"],["Ocelot","Ocelot"],["Serval","Serval"],["Abyssinian","Abyssinian cat"],["Manx Cat","Manx cat"],["Calico Cat","Calico cat"]],"Famous Islands":[["Hawaii","Hawaii (island)"],["Bali","Bali"],["Santorini","Santorini"],["Maldives","Maldives"],["Iceland","Iceland"],["Sicily","Sicily"],["Madagascar","Madagascar"],["Fiji","Fiji"],["Bora Bora","Bora Bora"],["Capri","Capri"],["Mauritius","Mauritius"],["Seychelles","Seychelles"],["Cyprus","Cyprus"],["Malta","Malta"],["Greenland","Greenland"],["Tahiti","Tahiti"],["Jamaica","Jamaica"],["Cuba","Cuba"],["Crete","Crete"],["Sardinia","Sardinia"],["Phuket","Phuket Province"],["Galapagos","Galápagos Islands"],["Easter Island","Easter Island"],["Ibiza","Ibiza"],["Bahamas","The Bahamas"]],"Body Parts & Anatomy":[["Heart","Heart"],["Brain","Brain"],["Lungs","Lung"],["Eye","Human eye"],["Ear","Ear"],["Hand","Hand"],["Foot","Foot"],["Skeleton","Human skeleton"],["Skull","Skull"],["Spine","Vertebral column"],["Kidney","Kidney"],["Liver","Liver"],["Stomach","Stomach"],["Teeth","Tooth"],["Nose","Human nose"],["Tongue","Tongue"],["Muscle","Muscle"],["Rib Cage","Rib cage"],["DNA","DNA"],["Blood Cells","Blood cell"],["Neuron","Neuron"],["Intestine","Gastrointestinal tract"],["Fingerprint","Fingerprint"],["Veins","Vein"],["Hair","Hair"]],"World Cuisine & Dishes":[["Pizza","Pizza"],["Sushi","Sushi"],["Hamburger","Hamburger"],["Tacos","Taco"],["Pasta","Pasta"],["Curry","Curry"],["Ramen","Ramen"],["Paella","Paella"],["Dumplings","Dumpling"],["Falafel","Falafel"],["Burrito","Burrito"],["Pho","Pho"],["Fish and Chips","Fish and chips"],["Croissant","Croissant"],["Hummus","Hummus"],["Kebab","Kebab"],["Lasagna","Lasagne"],["Pad Thai","Pad thai"],["Risotto","Risotto"],["Fried Rice","Fried rice"],["Spring Roll","Spring roll"],["Nachos","Nachos"],["Pancakes","Pancake"],["Steak","Steak"],["Omelette","Omelette"]],"Tools of Music & Audio":[["Headphones","Headphones"],["Microphone","Microphone"],["Speaker","Loudspeaker"],["Vinyl Record","Phonograph record"],["Turntable","Phonograph"],["Cassette Tape","Cassette tape"],["CD","Compact disc"],["Radio","Radio"],["Amplifier","Guitar amplifier"],["Synthesizer","Synthesizer"],["Metronome","Metronome"],["Tuning Fork","Tuning fork"],["Earbuds","Headphones"],["Boombox","Boombox"],["Megaphone","Megaphone"],["Mixing Console","Mixing console"],["Jukebox","Jukebox"],["Gramophone","Phonograph"],["Drum Machine","Drum machine"],["Equalizer","Equalization (audio)"],["Walkman","Walkman"],["MP3 Player","MP3 player"],["Music Stand","Music stand"],["Sheet Music","Sheet music"],["Conductor's Baton","Baton (conducting)"]]};
+
+</script>
+<script id="appScript">
+/* =====================================================================
+   GRID DUEL — Territory Showdown  (engine)
+   Rules (corrected + expanded per spec):
+   - Board is a rows x cols GRID of category blocks (orthogonal adjacency).
+   - DRAFT (secret, pass-the-device): each player claims a CONTIGUOUS
+     territory of K blocks (K = total/players, remainder spread to early
+     pickers). Picks hidden from other players between turns.
+   - CONQUEST: a random border block is chosen; its owner becomes the
+     CONQUEROR. They challenge an adjacent enemy block (a DUEL). Win =>
+     take that one tile, then continue challenging or stop. On stop (or a
+     loss) a new random border owner becomes conqueror.
+   - DUEL: both players get a fresh personal clock. Controller's clock
+     ticks. Correct => hand control to opponent. Miss/Pass => keep control
+     & keep burning your own time. Pictures keep coming until ONE clock
+     hits 0 — that player LOSES the duel. (A single correct answer never
+     ends a duel.)
+   - A player owning 0 blocks is OUT. Game ends when one player owns ALL.
+   ===================================================================== */
+(function(){
+'use strict';
+
+const PCOLORS = ['#ff3864','#2de2e6','#3ddc97','#ffd23f','#b76eff','#ff8c42','#54c6eb','#f15bb5'];
+
+const $ = (id)=>document.getElementById(id);
+const app = $('app');
+
+// ---------- utils ----------
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=(Math.random()*(i+1))|0;[a[i],a[j]]=[a[j],a[i]];}return a;}
+function rand(arr){return arr[(Math.random()*arr.length)|0];}
+
+// ---------- AUDIO (synthesized, no files — packaging-friendly) ----------
+let audioCtx=null, soundOn=true;
+function ac(){ if(!audioCtx){ try{ audioCtx=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} } return audioCtx; }
+function tone(freq,dur,type,vol,when){
+  if(!soundOn) return; const c=ac(); if(!c) return;
+  const t=(when||c.currentTime);
+  const o=c.createOscillator(), g=c.createGain();
+  o.type=type||'sine'; o.frequency.setValueAtTime(freq,t);
+  g.gain.setValueAtTime(0,t);
+  g.gain.linearRampToValueAtTime(vol||0.18,t+0.01);
+  g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+  o.connect(g); g.connect(c.destination); o.start(t); o.stop(t+dur+0.02);
+}
+function sfx(name){
+  if(!soundOn) return; const c=ac(); if(!c) return; const n=c.currentTime;
+  switch(name){
+    case 'pick':    tone(520,0.07,'triangle',0.12); break;
+    case 'select':  tone(660,0.08,'triangle',0.14); tone(880,0.08,'triangle',0.1,n+0.05); break;
+    case 'correct': tone(660,0.09,'sine',0.16); tone(990,0.13,'sine',0.16,n+0.08); break;
+    case 'pass':    tone(220,0.16,'sawtooth',0.14); break;
+    case 'tick':    tone(1500,0.03,'square',0.05); break;
+    case 'lowtick': tone(1850,0.05,'square',0.09); break;
+    case 'timeup':  tone(180,0.5,'sawtooth',0.2); tone(120,0.7,'sawtooth',0.18,n+0.12); break;
+    case 'capture': tone(523,0.1,'sine',0.16); tone(659,0.1,'sine',0.16,n+0.09); tone(784,0.18,'sine',0.18,n+0.18); break;
+    case 'count':   tone(440,0.13,'triangle',0.18); break;
+    case 'go':      tone(880,0.25,'sine',0.2); tone(1320,0.3,'sine',0.18,n+0.05); break;
+    case 'win':     [523,659,784,1047].forEach((f,i)=>tone(f,0.32,'sine',0.2,n+i*0.13)); break;
+    case 'defend':  tone(330,0.18,'square',0.14); tone(247,0.22,'square',0.12,n+0.1); break;
+  }
+}
+function setSound(on){ soundOn=on; if(on){ const c=ac(); if(c&&c.state==='suspended') c.resume(); } }
+function getSound(){ return soundOn; }
+
+// ===================================================================
+// CONTENT  (mutable so a custom "question pack" can replace the default)
+// ===================================================================
+let CONTENT = (typeof GAME_CONTENT!=='undefined') ? GAME_CONTENT : {};
+function getList(cat){ return CONTENT[cat] || []; }
+// answers may be legacy [name,wiki] tuples OR {name,wiki,img} objects
+function normAnswer(a){
+  if(Array.isArray(a)) return {name:a[0], wiki:a[1]||null, img:null};
+  return {name:a.name, wiki:a.wiki||null, img:a.img||null};
+}
+function setContent(obj){ if(obj && typeof obj==='object') CONTENT=obj; }
+
+// ===================================================================
+// STATE
+// ===================================================================
+let STATE=null;
+
+function freshState(players, gridCats, rows, cols, opts){
+  opts=opts||{};
+  const blocks = gridCats.map((cat,i)=>({
+    id:i, r:(i/cols)|0, c:i%cols, cat,
+    owner:null,
+    order: shuffle([...Array(getList(cat).length).keys()]),
+    qIndex:0,
+  }));
+  const total=blocks.length, n=players.length;
+  const base=Math.floor(total/n), rem=total%n;
+  const order=shuffle(players.map(p=>p.id));
+  const quota={}; order.forEach((pid,idx)=>{ quota[pid]=base+(idx<rem?1:0); });
+  const claimed={}; order.forEach(pid=>{ claimed[pid]=0; });
+  return {
+    rows, cols, blocks,
+    players: players.map(p=>({...p,out:false})),
+    duelSeconds: opts.duelSeconds||45,
+    passPenalty: (opts.passPenalty!=null)?opts.passPenalty:3,
+    phase:'draft',
+    // snake draft: pick ONE block per turn, rotating through players each round
+    draft:{ order, quota, claimed, round:0, ptr:0, dir:1, picker:order[0] },
+    conquest:null,
+    winner:null,
+    flash:null,        // transient message for the stage
+  };
+}
+
+// ---------- grid helpers ----------
+function blockAt(r,c){ if(r<0||c<0||r>=STATE.rows||c>=STATE.cols) return null; return STATE.blocks[r*STATE.cols+c]; }
+function neighbors(b){ return [blockAt(b.r-1,b.c),blockAt(b.r+1,b.c),blockAt(b.r,b.c-1),blockAt(b.r,b.c+1)].filter(Boolean); }
+function ownedBy(pid){ return STATE.blocks.filter(b=>b.owner===pid); }
+function tileCount(pid){ return ownedBy(pid).length; }
+// enemy blocks adjacent to any block owned by pid
+function attackTargets(pid){
+  const set=new Set();
+  ownedBy(pid).forEach(b=> neighbors(b).forEach(nb=>{ if(nb.owner!==pid && nb.owner!==null) set.add(nb.id); }));
+  return [...set].map(id=>STATE.blocks[id]);
+}
+function isBorder(b){ return b.owner!==null && neighbors(b).some(nb=>nb.owner!==null && nb.owner!==b.owner); }
+
+// ===================================================================
+// CONNECTION  (PeerJS — room-code peer-to-peer)
+// ===================================================================
+let peer=null, conn=null, ROLE=null, ROOM=null, connLive=false;
+let hbTimer=null, reconnectTimer=null, joinAttempts=0;
+const PREFIX='GRIDDUEL2-';
+// STUN servers greatly improve cross-network connection success
+const PEER_CFG={ config:{ iceServers:[
+  {urls:'stun:stun.l.google.com:19302'},
+  {urls:'stun:stun1.l.google.com:19302'},
+  {urls:'stun:global.stun.twilio.com:3478'}
+]}, debug:1 };
+function makeCode(){const c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let s='';for(let i=0;i<4;i++)s+=c[(Math.random()*c.length)|0];return s;}
+function send(m){ if(conn&&conn.open){ try{conn.send(m);}catch(e){console.warn(e);} } }
+
+// --- Custom connection server (your own reliable host, replaces public broker) ---
+function getServerURL(){ try{ return localStorage.getItem('gd_server')||''; }catch(e){ return _serverMem||''; } }
+let _serverMem='';
+function setServerURL(url){ _serverMem=url||''; try{ if(url) localStorage.setItem('gd_server',url); else localStorage.removeItem('gd_server'); }catch(e){} }
+function peerOptions(){
+  const base=JSON.parse(JSON.stringify(PEER_CFG));
+  let url=getServerURL();
+  // Auto: if no manual server set AND the game is being served over http(s)
+  // (i.e. hosted, not opened as a local file), use THIS site's own origin as
+  // the connection server. One deploy = game + server, zero config for players.
+  if(!url){
+    try{
+      if(location && /^https?:$/.test(location.protocol) && location.host){ url=location.origin; }
+    }catch(e){}
+  }
+  if(url){
+    try{
+      const u=new URL(url);
+      base.host=u.hostname;
+      base.secure=(u.protocol==='https:');
+      base.port=u.port? Number(u.port) : (base.secure?443:80);
+      base.path=(u.pathname && u.pathname!=='/')? u.pathname : '/peerjs';
+    }catch(e){ showToast('Server URL looks invalid — using default'); }
+  }
+  return base;
+}
+
+function hostRoom(onReady){
+  ROOM=makeCode();
+  peer=new Peer(PREFIX+ROOM,peerOptions());
+  peer.on('open',()=>onReady(ROOM));
+  peer.on('connection',(c)=>{
+    conn=c;
+    c.on('open',()=>{
+      setConnLive(true); send({t:'state',s:STATE});
+      startHeartbeat();   // periodic state re-sync so dropped messages self-heal
+    });
+    c.on('data',handleJudgeMsg);
+    c.on('close',()=>{ setConnLive(false); stopHeartbeat(); });
+    c.on('error',()=>{ setConnLive(false); });
+  });
+  peer.on('error',(e)=>{
+    if(e.type==='unavailable-id'){ peer.destroy(); hostRoom(onReady); }
+    else if(e.type==='network'||e.type==='server-error'||e.type==='socket-error'){ showToast('Reconnecting…'); setTimeout(()=>{ try{peer.reconnect();}catch(_){}}, 1500); }
+    else { showToast('Connection issue: '+e.type); }
+  });
+  peer.on('disconnected',()=>{ try{peer.reconnect();}catch(_){} });
+}
+function joinRoom(code,cb){
+  ROOM=code.toUpperCase();
+  joinAttempts++;
+  peer=new Peer(peerOptions());
+  let settled=false;
+  peer.on('open',()=>{
+    conn=peer.connect(PREFIX+ROOM,{reliable:true});
+    conn.on('open',()=>{ settled=true; setConnLive(true); cb(true); });
+    conn.on('data',handleStageMsg);
+    conn.on('close',()=>{ setConnLive(false); showToast('Screen disconnected — trying to reconnect…'); scheduleRejoin(code); });
+    conn.on('error',()=>{ setConnLive(false); });
+    // retry once automatically before reporting failure
+    setTimeout(()=>{ if(!settled){ if(joinAttempts<2){ try{peer.destroy();}catch(_){} joinRoom(code,cb); } else { cb(false,'Could not reach the Screen. Check both are online & the code is right.'); } } },9000);
+  });
+  peer.on('error',(e)=>{
+    if(e.type==='peer-unavailable'){ settled=true; cb(false,'No room with that code — is the Screen hosting?'); }
+    else if(!settled && joinAttempts<2){ try{peer.destroy();}catch(_){} joinRoom(code,cb); }
+    else if(!settled){ cb(false, e.type); }
+  });
+}
+function scheduleRejoin(code){
+  if(reconnectTimer) return;
+  reconnectTimer=setTimeout(()=>{ reconnectTimer=null; if(!connLive && ROLE==='judge'){ joinAttempts=0; joinRoom(code,(ok)=>{ if(ok) showToast('Reconnected!'); }); } },2500);
+}
+function startHeartbeat(){ stopHeartbeat(); hbTimer=setInterval(()=>{ if(connLive) send({t:'state',s:STATE}); },4000); }
+function stopHeartbeat(){ if(hbTimer){clearInterval(hbTimer);hbTimer=null;} }
+function setConnLive(v){ connLive=v; if(window.__onConn) window.__onConn(v); }
+
+function handleJudgeMsg(m){ if(m.t==='action') applyAction(m.action,m.payload); }
+function handleStageMsg(m){ if(m.t==='state'){ STATE=m.s; if(window.__renderJudge) window.__renderJudge(); } }
+
+// ===================================================================
+// REFRESH  (single source of truth for re-rendering)
+// ===================================================================
+let soloMode=false;
+function refresh(){
+  if(soloMode){ if(window.__renderStage)window.__renderStage(); if(window.__renderJudge)window.__renderJudge(); }
+  else if(ROLE==='stage'){ send({t:'state',s:STATE}); if(window.__renderStage)window.__renderStage(); }
+  else if(ROLE==='judge'){ if(window.__renderJudge)window.__renderJudge(); }
+}
+
+// ===================================================================
+// ACTIONS  (authority = stage or solo)
+// ===================================================================
+function judgeAct(action,payload){
+  if(soloMode||ROLE==='stage') applyAction(action,payload||{});
+  else send({t:'action',action,payload:payload||{}});
+}
+
+function applyAction(action,p){
+  if(!STATE) return;
+  switch(action){
+    case 'draftPick':      draftPick(p.blockId); break;
+    case 'draftAdvance':   /* picker confirmed; handled in draftPick auto */ break;
+    case 'challenge':      startDuel(p.blockId); break;
+    case 'stopConquest':   pickConqueror(); break;
+    case 'duelCorrect':    sfx('correct'); duelResolveTurn(true); break;
+    case 'duelMiss':       sfx('pass'); duelResolveTurn(false); break;
+    case 'restart':        STATE=freshState(STATE.players.map(pl=>({id:pl.id,name:pl.name,color:pl.color})), STATE.blocks.map(b=>b.cat), STATE.rows, STATE.cols, {duelSeconds:STATE.duelSeconds, passPenalty:STATE.passPenalty}); break;
+  }
+  refresh();
+}
+
+// ---------- DRAFT (snake, connected growth) ----------
+function draftPickable(pid){
+  const free=STATE.blocks.filter(b=>b.owner===null);
+  const mine=ownedBy(pid);
+  if(mine.length===0){
+    // first pick = a seed. Prefer free cells far from other players' seeds so
+    // regions have room to grow (reduces boxing-in on crowded boards).
+    const others=STATE.blocks.filter(b=>b.owner!==null);
+    if(others.length===0) return free;
+    const scored=free.map(b=>{
+      let dmin=Infinity;
+      others.forEach(o=>{ const d=Math.abs(o.r-b.r)+Math.abs(o.c-b.c); if(d<dmin)dmin=d; });
+      return {b,d:dmin};
+    }).sort((a,z)=>z.d-a.d);
+    const best=scored[0].d;
+    return scored.filter(s=>s.d>=best-1).map(s=>s.b);   // any of the farthest cells
+  }
+  // growth: only free cells orthogonally adjacent to my territory
+  return free.filter(b=> neighbors(b).some(nb=>nb.owner===pid));
+}
+function draftDone(){
+  // every player has hit quota OR no free blocks remain
+  return STATE.blocks.every(b=>b.owner!==null) ||
+         STATE.draft.order.every(pid=>STATE.draft.claimed[pid]>=STATE.draft.quota[pid]);
+}
+function advanceDraftPicker(){
+  const d=STATE.draft, n=d.order.length;
+  // snake pointer
+  let guard=0;
+  do{
+    d.ptr += d.dir;
+    if(d.ptr>=n){ d.ptr=n-1; d.dir=-1; d.round++; }
+    else if(d.ptr<0){ d.ptr=0; d.dir=1; d.round++; }
+    d.picker=d.order[d.ptr];
+    guard++;
+    // skip players who've hit quota or are boxed in (no legal pick)
+    const done = d.claimed[d.picker]>=d.quota[d.picker];
+    const boxed = draftPickable(d.picker).length===0;
+    if(!done && !boxed) return true;
+  } while(guard < n*4 && !draftDone());
+  return false;  // nobody can pick -> draft over
+}
+function fillRemainder(){
+  // Leftover free blocks go to an ADJACENT owner, preferring whoever owns the
+  // FEWEST tiles — keeps territories connected AND sizes balanced.
+  let guard=0;
+  while(STATE.blocks.some(b=>b.owner===null) && guard++<STATE.blocks.length*3){
+    const free=STATE.blocks.filter(b=>b.owner===null);
+    let placed=false;
+    for(const b of free){
+      const nbOwners=[...new Set(neighbors(b).map(nb=>nb.owner).filter(o=>o!==null))];
+      if(nbOwners.length){
+        nbOwners.sort((a,z)=>tileCount(a)-tileCount(z));
+        b.owner=nbOwners[0]; placed=true;
+      }
+    }
+    if(!placed){ // isolated pocket: seed it to the player with the fewest tiles
+      const pid=STATE.draft.order.slice().sort((a,z)=>tileCount(a)-tileCount(z))[0];
+      free[0].owner=pid;
+    }
+  }
+}
+function draftPick(blockId){
+  const d=STATE.draft;
+  const b=STATE.blocks[blockId];
+  if(!b||b.owner!==null) return;
+  const pickable=draftPickable(d.picker);
+  if(!pickable.some(x=>x.id===blockId)){ STATE.flash='Pick a highlighted block (must touch your land)'; return; }
+  b.owner=d.picker; d.claimed[d.picker]++;
+  if(draftDone()){ fillRemainder(); beginConquest(); return; }
+  if(!advanceDraftPicker()){ fillRemainder(); beginConquest(); }
+}
+
+// ---------- CONQUEST ----------
+function beginConquest(){
+  STATE.phase='conquest';
+  STATE.conquest={ sub:'pickConqueror', conqueror:null, duel:null };
+  pickConqueror();
+}
+function pickConqueror(){
+  stopClock();
+  checkWin(); if(STATE.phase==='gameover') return;
+  const border=STATE.blocks.filter(isBorder);
+  if(border.length===0){ checkWin(); return; }
+  const chosen=rand(border);
+  STATE.conquest.conqueror=chosen.owner;
+  STATE.conquest.sub='chooseTarget';
+  STATE.conquest.duel=null;
+  const pl=STATE.players.find(x=>x.id===chosen.owner);
+  STATE.flash='🎯 '+(pl?pl.name:'?')+' may conquer!';
+}
+function startDuel(blockId){
+  const cq=STATE.conquest;
+  const block=STATE.blocks[blockId];
+  if(!block) return;
+  const challenger=cq.conqueror, defender=block.owner;
+  if(defender===null||defender===challenger) return;
+  // must be a valid adjacent target
+  if(!attackTargets(challenger).some(t=>t.id===blockId)){ STATE.flash='That block is not adjacent to your land'; return; }
+  cq.sub='countdown';
+  cq.count=3;
+  cq.duel={
+    blockId, cat:block.cat,
+    challenger, defender,
+    control:challenger,                 // challenger answers first
+    time:{ [challenger]:STATE.duelSeconds, [defender]:STATE.duelSeconds },
+    answer: drawQuestion(block),
+    starter:challenger,
+  };
+  STATE.flash=null;
+  startCountdown();
+}
+// 3 - 2 - 1 - GO before the clock runs. Driven by self-scheduling timeouts
+// (each step schedules the next) and wrapped so a render error can NEVER
+// freeze the sequence — the duel is guaranteed to start.
+let cdTimers=[];
+function clearCountdown(){ cdTimers.forEach(t=>clearTimeout(t)); cdTimers=[]; }
+function startCountdown(){
+  stopClock(); clearCountdown();
+  try{ sfx('count'); }catch(e){}
+  const cq=STATE.conquest;
+  // schedule: 2 at +900, 1 at +1800, GO at +2700, start duel at +3600
+  cdTimers.push(setTimeout(()=>cdStep(2),900));
+  cdTimers.push(setTimeout(()=>cdStep(1),1800));
+  cdTimers.push(setTimeout(()=>cdStep(0),2700));
+  cdTimers.push(setTimeout(()=>cdStart(),3600));
+}
+function cdStep(n){
+  const cq=STATE&&STATE.conquest;
+  if(!cq||cq.sub!=='countdown'){ clearCountdown(); return; }
+  cq.count=n;
+  try{ sfx(n>0?'count':'go'); }catch(e){}
+  try{ refresh(); }catch(e){ console.warn('countdown render',e); }
+}
+function cdStart(){
+  clearCountdown();
+  const cq=STATE&&STATE.conquest;
+  if(!cq||cq.sub!=='countdown'){ return; }   // already moved on / cancelled
+  cq.sub='duel'; cq.count=null;
+  startClock();
+  try{ refresh(); }catch(e){ console.warn('duel render',e); }
+}
+function drawQuestion(block){
+  const list=getList(block.cat);
+  if(block.qIndex>=block.order.length){ block.order=shuffle([...Array(list.length).keys()]); block.qIndex=0; }
+  const idx=block.order[block.qIndex++];
+  const a=normAnswer(list[idx]);
+  return {name:a.name, wiki:a.wiki, img:a.img, cat:block.cat};
+}
+// Correct => hand control to opponent (your clock stops, theirs ticks).
+// Miss/Pass => keep control, take a time PENALTY, keep burning your clock.
+function duelResolveTurn(correct){
+  const d=STATE.conquest.duel; if(!d) return;
+  const block=STATE.blocks[d.blockId];
+  if(correct){
+    d.control = (d.control===d.challenger)?d.defender:d.challenger;
+  } else {
+    // pass/wrong penalty
+    const pen=STATE.passPenalty||0;
+    d.time[d.control]=Math.max(0, d.time[d.control]-pen);
+    if(d.time[d.control]<=0){ endDuel(d.control); return; }
+  }
+  d.answer=drawQuestion(block);
+  // clock keeps running on whoever now has control
+}
+function endDuel(loserId){
+  const d=STATE.conquest.duel;
+  const winnerId=(loserId===d.challenger)?d.defender:d.challenger;
+  stopClock();
+  sfx('timeup');
+  if(winnerId===d.challenger){
+    // challenger conquers the contested tile
+    STATE.blocks[d.blockId].owner=d.challenger;
+    if(window.__markWon) window.__markWon(d.blockId);
+    const pl=STATE.players.find(x=>x.id===d.challenger);
+    STATE.flash='✅ '+(pl?pl.name:'?')+' takes the tile!';
+    checkWin();
+    if(STATE.phase==='gameover'){ setTimeout(()=>sfx('win'),300); }
+    else {
+      setTimeout(()=>sfx('capture'),250);
+      STATE.conquest.sub='chooseTarget';   // continue conquering or stop
+      STATE.conquest.duel=null;
+      // if no targets remain, auto-pick a new conqueror
+      if(attackTargets(d.challenger).length===0) pickConqueror();
+    }
+  } else {
+    // defender held; conqueror's turn ends
+    const pl=STATE.players.find(x=>x.id===d.defender);
+    STATE.flash='🛡️ '+(pl?pl.name:'?')+' defended!';
+    setTimeout(()=>sfx('defend'),250);
+    STATE.conquest.duel=null;
+    pickConqueror();
+  }
+}
+function checkWin(){
+  STATE.players.forEach(pl=>{ pl.out = tileCount(pl.id)===0; });
+  const alive=STATE.players.filter(pl=>!pl.out);
+  const everyoneOneOwner = STATE.blocks.every(b=>b.owner===STATE.blocks[0].owner);
+  if(alive.length<=1 || everyoneOneOwner){
+    STATE.phase='gameover';
+    STATE.winner = alive.length? alive[0].id : STATE.blocks[0].owner;
+    stopClock();
+  }
+}
+
+// ---------- CLOCK (authority only) ----------
+let clockTimer=null;
+function startClock(){ stopClock(); clockTimer=setInterval(tick,1000); }
+function stopClock(){ if(clockTimer){clearInterval(clockTimer);clockTimer=null;} }
+function tick(){
+  if(!STATE||!STATE.conquest||STATE.conquest.sub!=='duel'){ stopClock(); return; }
+  const d=STATE.conquest.duel; const pid=d.control;
+  d.time[pid]=Math.max(0,d.time[pid]-1);
+  try{ if(d.time[pid]>0){ sfx(d.time[pid]<=10?'lowtick':'tick'); } }catch(e){}
+  if(d.time[pid]<=0){ endDuel(pid); }
+  try{ refresh(); }catch(e){ console.warn('tick render',e); }
+}
+
+// ---------- IMAGES (Wikipedia, free-licensed) ----------
+// To show a page's lead photo we must ask the API which file that is, then load
+// it. Primary: Action API (origin=* → CORS works from any page, even file://).
+// Fallback: REST summary endpoint. Result cached so each title is fetched once.
+const imgCache={};
+async function fetchImage(title){
+  if(!title) return null;
+  if(imgCache[title]!==undefined) return imgCache[title];
+  const t=title.replace(/ /g,'_');
+  let src=null;
+  try{
+    const api='https://en.wikipedia.org/w/api.php?action=query&format=json&origin=*'
+      +'&prop=pageimages&piprop=thumbnail&pithumbsize=600&redirects=1&titles='+encodeURIComponent(title);
+    const r=await fetch(api);
+    if(r.ok){
+      const j=await r.json();
+      const pages=j&&j.query&&j.query.pages;
+      if(pages){ for(const k in pages){ const p=pages[k]; if(p.thumbnail&&p.thumbnail.source){ src=p.thumbnail.source; break; } } }
+    }
+  }catch(e){}
+  if(!src){
+    try{
+      const r2=await fetch('https://en.wikipedia.org/api/rest_v1/page/summary/'+encodeURIComponent(t));
+      if(r2.ok){ const j2=await r2.json(); src=(j2.thumbnail&&j2.thumbnail.source)||(j2.originalimage&&j2.originalimage.source)||null; }
+    }catch(e){}
+  }
+  imgCache[title]=src; return src;
+}
+
+// ---------- PHOTO CACHE (IndexedDB — persists on device, works offline) ------
+// First time a photo is shown it loads from Wikipedia and is saved on the
+// device in the background. Next time that answer appears it loads instantly
+// from local storage, with no internet needed. No giant download, mobile-safe.
+let _idb=null, _idbTried=false;
+function openPhotoDB(){
+  return new Promise((resolve)=>{
+    if(_idb) return resolve(_idb);
+    if(_idbTried && !_idb) return resolve(null);
+    try{
+      if(typeof indexedDB==='undefined'){ _idbTried=true; return resolve(null); }
+      const req=indexedDB.open('gridduel-photos',1);
+      req.onupgradeneeded=()=>{ try{ req.result.createObjectStore('imgs'); }catch(e){} };
+      req.onsuccess=()=>{ _idb=req.result; _idbTried=true; resolve(_idb); };
+      req.onerror=()=>{ _idbTried=true; resolve(null); };
+    }catch(e){ _idbTried=true; resolve(null); }
+  });
+}
+function idbGet(key){
+  return new Promise(async(resolve)=>{
+    const db=await openPhotoDB(); if(!db) return resolve(null);
+    try{ const r=db.transaction('imgs','readonly').objectStore('imgs').get(key);
+      r.onsuccess=()=>resolve(r.result||null); r.onerror=()=>resolve(null);
+    }catch(e){ resolve(null); }
+  });
+}
+function idbPut(key,val){
+  return new Promise(async(resolve)=>{
+    const db=await openPhotoDB(); if(!db) return resolve(false);
+    try{ const r=db.transaction('imgs','readwrite').objectStore('imgs').put(val,key);
+      r.onsuccess=()=>resolve(true); r.onerror=()=>resolve(false);
+    }catch(e){ resolve(false); }
+  });
+}
+function idbCount(){
+  return new Promise(async(resolve)=>{
+    const db=await openPhotoDB(); if(!db) return resolve(0);
+    try{ const r=db.transaction('imgs','readonly').objectStore('imgs').count();
+      r.onsuccess=()=>resolve(r.result||0); r.onerror=()=>resolve(0);
+    }catch(e){ resolve(0); }
+  });
+}
+function clearPhotoCache(){
+  return new Promise(async(resolve)=>{
+    const db=await openPhotoDB(); if(!db) return resolve(false);
+    try{ const r=db.transaction('imgs','readwrite').objectStore('imgs').clear();
+      r.onsuccess=()=>resolve(true); r.onerror=()=>resolve(false);
+    }catch(e){ resolve(false); }
+  });
+}
+function cacheInBackground(key,url){
+  (async()=>{
+    try{
+      const r=await fetch(url); if(!r.ok) return;
+      const blob=await r.blob();
+      const dataUrl=await new Promise(res=>{ const fr=new FileReader(); fr.onload=()=>res(fr.result); fr.onerror=()=>res(null); fr.readAsDataURL(blob); });
+      if(dataUrl) idbPut(key,dataUrl);
+    }catch(e){}
+  })();
+}
+// Main entry used by the UI: returns a displayable image URL, preferring the
+// on-device cached copy. Never blocks display on the background download.
+async function getImage(opt){
+  // opt = {wiki, img}  (img = custom URL/dataURL that bypasses Wikipedia)
+  if(opt && opt.img) return opt.img;
+  const title = opt && opt.wiki;
+  if(!title) return null;
+  const key='t:'+title;
+  const cached=await idbGet(key);
+  if(cached) return cached;                 // instant + offline
+  const url=await fetchImage(title);        // resolve remote URL
+  if(!url) return null;
+  cacheInBackground(key,url);               // save for next time (non-blocking)
+  return url;                               // show immediately from remote
+}
+
+// ---------- TOAST ----------
+function showToast(txt){
+  const host=$('toastHost'); if(!host) return;
+  const t=document.createElement('div'); t.className='toast'; t.textContent=txt;
+  host.appendChild(t);
+  setTimeout(()=>{t.style.transition='opacity .3s';t.style.opacity='0';setTimeout(()=>t.remove(),300);},2200);
+}
+
+// ---------- expose ----------
+window.__GD={
+  PCOLORS, $, app, PREFIX,
+  get STATE(){return STATE;}, set STATE(v){STATE=v;},
+  get ROLE(){return ROLE;}, set ROLE(v){ROLE=v;},
+  get ROOM(){return ROOM;}, get connLive(){return connLive;},
+  get soloMode(){return soloMode;}, set soloMode(v){soloMode=v;},
+  get GAME_CONTENT(){return CONTENT;}, setContent,
+  freshState, hostRoom, joinRoom, judgeAct, applyAction, refresh,
+  getServerURL, setServerURL,
+  fetchImage, getImage, idbCount, clearPhotoCache, showToast, shuffle,
+  sfx, setSound, getSound,
+  blockAt, neighbors, ownedBy, tileCount, attackTargets, isBorder, draftPickable,
+};
+})();
+
+/* =====================================================================
+   GRID DUEL — view layer
+   ===================================================================== */
+(function(){
+'use strict';
+const GD=window.__GD;
+const {PCOLORS,$,app,fetchImage,judgeAct,showToast}=GD;
+
+function el(t,c,h){const e=document.createElement(t);if(c)e.className=c;if(h!=null)e.innerHTML=h;return e;}
+function S(){return GD.STATE;}
+function colorOf(pid){const p=S().players.find(x=>x.id===pid);return p?p.color:'#888';}
+function nameOf(pid){const p=S().players.find(x=>x.id===pid);return p?p.name:'?';}
+
+// ===================================================================
+// MENU
+// ===================================================================
+let cfg={players:[{name:'Player 1'},{name:'Player 2'},{name:'Player 3'}], rows:5, cols:6, duelSeconds:45, passPenalty:3, cats:null, selectedCats:null};
+
+function refreshCacheInfo(){
+  if(!GD.idbCount) return;
+  GD.idbCount().then(n=>{ const el2=$('cacheInfo'); if(el2) el2.innerHTML=`<b style="color:var(--good)">${n}</b> photo${n===1?'':'s'} saved on this device · they load instantly & work offline.`; });
+}
+
+function renderMenu(){
+  app.innerHTML='';
+  const w=el('div','wrap');
+  w.innerHTML=`<div class="brand"><div class="logo">GRID<br>DUEL</div>
+    <div class="sub">Territory Showdown</div>
+    <div class="tile-grid-deco">${'<i></i>'.repeat(18)}</div></div>`;
+  const m=el('div','menu');
+  const b1=el('button','btn','📺  Be the Screen (Host)'); b1.onclick=()=>{GD.soloMode=false;setupFlow();};
+  const b2=el('button','btn alt','⚖️  Be the Judge (Join)'); b2.onclick=joinFlow;
+  const b3=el('button','btn ghost','🎮  Single device'); b3.onclick=()=>{GD.soloMode=true;setupFlow();};
+  m.append(b1,b2,b3); w.append(m);
+
+  // ---- custom question pack loader ----
+  const packCard=el('div','card'); packCard.style.marginTop='16px';
+  const catCount=Object.keys(GD.GAME_CONTENT).length;
+  packCard.innerHTML=`<div class="ph-label">Question pack</div>
+    <p class="note" id="packInfo">${customPackName?('📦 '+customPackName):'Built-in pack'} · ${catCount} categories</p>`;
+  const loadBtn=el('button','btn ghost small','📦 Load custom pack (.json)'); loadBtn.style.marginRight='8px';
+  const fileIn=el('input'); fileIn.type='file'; fileIn.accept='.json,application/json'; fileIn.style.display='none';
+  fileIn.onchange=(e)=>loadPackFile(e.target.files[0]);
+  loadBtn.onclick=()=>fileIn.click();
+  packCard.append(loadBtn, fileIn);
+  if(customPackName){ const reset=el('button','btn ghost small','↺ Reset to built-in'); reset.onclick=()=>{ GD.setContent(BUILTIN_CONTENT); customPackName=null; renderMenu(); }; packCard.append(reset); }
+  w.append(packCard);
+
+  // ---- photo cache status ----
+  const cacheCard=el('div','card'); cacheCard.style.marginTop='12px';
+  cacheCard.innerHTML=`<div class="ph-label">Photo cache</div>
+    <p class="note" id="cacheInfo">Photos save to this device as you play — instant & offline next time.</p>`;
+  const clearBtn=el('button','btn ghost small','🗑 Clear cached photos');
+  clearBtn.onclick=async()=>{ await GD.clearPhotoCache(); refreshCacheInfo(); GD.showToast&&GD.showToast('Photo cache cleared'); };
+  cacheCard.append(clearBtn);
+  w.append(cacheCard);
+  refreshCacheInfo();
+
+  // ---- connection server (advanced) ----
+  const srvCard=el('div','card'); srvCard.style.marginTop='12px';
+  const curURL=GD.getServerURL();
+  const det=el('details');
+  det.innerHTML=`<summary>🔌 Connection server ${curURL?'<span style="color:var(--good)">(custom)</span>':'(using default)'}</summary>`;
+  const body=el('div'); body.style.paddingBottom='10px';
+  body.innerHTML=`<p class="note">For reliable two-device play, paste your own server's address here (see the deploy guide). Both the Screen and Judge phones must use the same address.</p>
+    <div class="field"><label>Server URL</label><input id="srvInput" placeholder="https://your-app.onrender.com" value="${curURL}"></div>`;
+  const row=el('div','row-2');
+  const save=el('button','btn good small','Save server');
+  save.onclick=()=>{ const v=$('srvInput').value.trim(); GD.setServerURL(v); GD.showToast&&GD.showToast(v?'Custom server saved':'Reverted to default'); renderMenu(); };
+  const clear=el('button','btn ghost small','Use default');
+  clear.onclick=()=>{ GD.setServerURL(''); GD.showToast&&GD.showToast('Using default broker'); renderMenu(); };
+  row.append(save,clear); body.append(row);
+  det.append(body); srvCard.append(det);
+  w.append(srvCard);
+
+  const note=el('div','card'); note.style.marginTop='12px';
+  note.innerHTML=`<div class="help-box">
+    <b>Two phones:</b> one is the <b>Screen</b> (cast to a TV — shows the board & picture clues). One is the <b>Judge</b> handheld — players secretly draft territory on it, and it shows answers + duel controls.
+    <div class="divider"></div>
+    <b>One phone?</b> Use single-device mode and pass it around.
+    <div class="divider"></div>
+    <b>Custom content?</b> Build categories, questions & photos in the <b>Admin / Content Editor</b> app, export a pack, and load it here.</div>`;
+  w.append(note); app.append(w);
+}
+
+// keep an immutable copy of the built-in pack for "reset"
+const BUILTIN_CONTENT = (function(){ try{ return JSON.parse(JSON.stringify(GD.GAME_CONTENT)); }catch(e){ return GD.GAME_CONTENT; } })();
+let customPackName=null;
+function loadPackFile(file){
+  if(!file) return;
+  const reader=new FileReader();
+  reader.onload=()=>{
+    try{
+      let data=JSON.parse(reader.result);
+      // accept {categories:{...}} or a bare {cat:[...]} map
+      const cats = data.categories || data;
+      if(!cats || typeof cats!=='object' || Array.isArray(cats)) throw new Error('bad format');
+      const keys=Object.keys(cats);
+      if(keys.length===0) throw new Error('no categories');
+      GD.setContent(cats);
+      customPackName=file.name;
+      showToast('Loaded '+keys.length+' categories');
+      renderMenu();
+    }catch(err){ showToast('Could not read pack: '+err.message); }
+  };
+  reader.readAsText(file);
+}
+
+// ===================================================================
+// SETUP  (players, board size, duel time)
+// ===================================================================
+function setupFlow(){
+  app.innerHTML='';
+  const w=el('div','wrap');
+  const back=el('button','back','‹ Back'); back.onclick=renderMenu; w.append(back);
+  w.append(el('h2',null,'Players'));
+  w.insertAdjacentHTML('beforeend','<p class="note">2–8 players. Each will secretly draft a connected territory.</p>');
+  const card=el('div','card'); card.style.marginTop='12px';
+  const list=el('div','players-list'); list.id='pl'; card.append(list);
+  const add=el('button','btn ghost small','+ Add Player'); add.style.marginTop='8px';
+  add.onclick=()=>{ if(cfg.players.length<8){cfg.players.push({name:'Player '+(cfg.players.length+1)});paintPlayers();} };
+  card.append(add); w.append(card);
+
+  // board size
+  w.append(el('h2',null,'Board')); w.children[w.children.length-1].style.marginTop='18px';
+  const bcard=el('div','card');
+  bcard.innerHTML=`<div class="ph-label">Grid size (blocks = categories on the board)</div>`;
+  const sizes=[['4×4',4,4],['5×5',5,5],['5×6',5,6],['6×6',6,6],['7×7',7,7],['5×10',5,10]];
+  const sg=el('div','size-grid');
+  sizes.forEach(([lbl,r,c])=>{
+    const t=el('button','size-opt'+((cfg.rows===r&&cfg.cols===c)?' on':''),`${lbl}<small>${r*c} blocks</small>`);
+    t.onclick=()=>{cfg.rows=r;cfg.cols=c;setupFlow();};
+    sg.append(t);
+  });
+  bcard.append(sg);
+  bcard.insertAdjacentHTML('beforeend',`<div class="ph-label" style="margin-top:14px">Duel clock per player</div>`);
+  const tg=el('div','size-grid');
+  [30,45,60].forEach(s=>{
+    const t=el('button','size-opt'+(cfg.duelSeconds===s?' on':''),`${s}s`);
+    t.onclick=()=>{cfg.duelSeconds=s;setupFlow();};
+    tg.append(t);
+  });
+  bcard.append(tg);
+  bcard.insertAdjacentHTML('beforeend',`<div class="ph-label" style="margin-top:14px">Pass penalty (time lost when a player passes)</div>`);
+  const pg=el('div','size-grid');
+  [0,3,5].forEach(s=>{
+    const t=el('button','size-opt'+(cfg.passPenalty===s?' on':''),s===0?'None':`−${s}s`);
+    t.onclick=()=>{cfg.passPenalty=s;setupFlow();};
+    pg.append(t);
+  });
+  bcard.append(pg);
+  w.append(bcard);
+
+  const total=cfg.rows*cfg.cols;
+  const warn=el('p','note');
+  warn.innerHTML = total>50
+    ? `⚠️ ${total} blocks but only 50 categories — some categories will repeat on the board.`
+    : `${total} blocks · ${cfg.players.length} players · ~${Math.floor(total/cfg.players.length)} blocks each.`;
+  w.append(warn);
+
+  const go=el('button','btn good','Choose Categories  ▶'); go.style.marginTop='16px';
+  go.onclick=chooseCategoriesScreen; w.append(go);
+  app.append(w); paintPlayers();
+}
+
+// ---- Category pool selector ----
+function chooseCategoriesScreen(){
+  const allCats=Object.keys(GD.GAME_CONTENT).filter(c=>(GD.GAME_CONTENT[c]||[]).length>0);
+  if(!cfg.selectedCats || cfg.selectedCats.length===0) cfg.selectedCats=[...allCats];
+  // keep only still-valid categories
+  cfg.selectedCats=cfg.selectedCats.filter(c=>allCats.includes(c));
+  app.innerHTML='';
+  const w=el('div','wrap');
+  const back=el('button','back','‹ Back'); back.onclick=setupFlow; w.append(back);
+  w.append(el('h2',null,'Category Pool'));
+  const info=el('p','note'); w.append(info);
+
+  const quick=el('div','row-2'); quick.style.margin='10px 0';
+  const all=el('button','btn ghost small','✓ Select all');
+  all.onclick=()=>{ cfg.selectedCats=[...allCats]; paintCats(); };
+  const none=el('button','btn ghost small','✗ Deselect all');
+  none.onclick=()=>{ cfg.selectedCats=[]; paintCats(); };
+  quick.append(all,none); w.append(quick);
+
+  const grid=el('div','cat-pick-grid'); grid.id='catpick'; w.append(grid);
+
+  const go=el('button','btn good'); go.id='startBtn'; go.style.marginTop='16px';
+  go.onclick=launch; w.append(go);
+  app.append(w);
+
+  function paintCats(){
+    grid.innerHTML='';
+    allCats.forEach(c=>{
+      const on=cfg.selectedCats.includes(c);
+      const t=el('div','cat-pick'+(on?' on':''));
+      t.innerHTML=`<span class="cp-check">${on?'✓':''}</span><span class="cp-name">${c}</span><span class="cp-count">${GD.GAME_CONTENT[c].length}</span>`;
+      t.onclick=()=>{ const i=cfg.selectedCats.indexOf(c); if(i>=0)cfg.selectedCats.splice(i,1); else cfg.selectedCats.push(c); paintCats(); };
+      grid.append(t);
+    });
+    const total=cfg.rows*cfg.cols, sel=cfg.selectedCats.length;
+    info.innerHTML=`<b>${sel}</b> categories selected · board needs <b>${total}</b> blocks.`;
+    const ok = sel>0;
+    const enough = sel>=total;
+    $('startBtn').disabled=!ok;
+    $('startBtn').textContent = !ok ? 'Select at least 1 category'
+      : enough ? `Start Draft  ▶  (${sel} in pool)`
+      : `Start Draft  ▶  (${sel} categories — some will repeat on the ${total} blocks)`;
+  }
+  paintCats();
+}
+
+function paintPlayers(){
+  const list=$('pl'); list.innerHTML='';
+  cfg.players.forEach((p,i)=>{
+    const row=el('div','player-row'); row.style.setProperty('--pc',PCOLORS[i]);
+    row.innerHTML=`<span class="swatch"></span>`;
+    const inp=el('input'); inp.value=p.name; inp.maxLength=14; inp.oninput=e=>cfg.players[i].name=e.target.value;
+    row.append(inp);
+    if(cfg.players.length>2){ const rm=el('button','rm','×'); rm.onclick=()=>{cfg.players.splice(i,1);paintPlayers();}; row.append(rm); }
+    list.append(row);
+  });
+}
+
+function launch(){
+  const total=cfg.rows*cfg.cols;
+  let pool=(cfg.selectedCats&&cfg.selectedCats.length)? cfg.selectedCats.slice()
+            : Object.keys(GD.GAME_CONTENT).filter(c=>(GD.GAME_CONTENT[c]||[]).length>0);
+  pool=pool.filter(c=>(GD.GAME_CONTENT[c]||[]).length>0);
+  if(pool.length===0){ showToast('Select at least one category'); return; }
+  let cats=GD.shuffle([...pool]).slice(0,total);
+  while(cats.length<total) cats.push(pool[cats.length%pool.length]); // repeat if board>pool
+  const players=cfg.players.map((p,i)=>({id:i,name:p.name||('Player '+(i+1)),color:PCOLORS[i]}));
+  GD.STATE=GD.freshState(players,cats,cfg.rows,cfg.cols,{duelSeconds:cfg.duelSeconds, passPenalty:cfg.passPenalty});
+  GD.ROLE='stage';
+  lastPicker=-1; draftReady=false; lastStageSig=null; lastJudgeSig=null;
+  if(GD.soloMode){ renderSoloRoot(); GD.refresh(); }
+  else { GD.hostRoom(()=>{ renderStage(); }); }
+}
+
+// ===================================================================
+// JOIN (judge)
+// ===================================================================
+function joinFlow(){
+  app.innerHTML='';
+  const w=el('div','wrap');
+  const back=el('button','back','‹ Back'); back.onclick=renderMenu; w.append(back);
+  w.append(el('h2',null,'Join as Judge'));
+  const card=el('div','card'); card.style.marginTop='12px';
+  card.innerHTML=`<div class="field"><label>Room Code</label><input class="code-input" id="codeIn" maxlength="4" placeholder="••••" autocapitalize="characters"></div>`;
+  const go=el('button','btn alt','Connect'); go.id='cb'; card.append(go);
+  const st=el('p','note'); st.id='js'; card.append(st);
+  w.append(card); app.append(w);
+  const inp=$('codeIn'); inp.oninput=e=>e.target.value=e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,''); inp.focus();
+  go.onclick=()=>{
+    const code=inp.value.trim();
+    if(code.length!==4){$('js').textContent='Enter the 4-character code on the screen.';return;}
+    GD.ROLE='judge'; GD.soloMode=false; go.disabled=true; $('js').textContent='Connecting…';
+    GD.joinRoom(code,(ok,err)=>{ if(ok){showToast('Connected!');} else {go.disabled=false;$('js').textContent=err||'Could not connect.';} });
+  };
+}
+
+// connection status hook
+window.__onConn=(v)=>{ const el2=document.querySelector('.status-pill'); if(el2){el2.classList.toggle('live',v); const tx=el2.querySelector('.txt'); if(tx)tx.textContent=v?'Judge connected':'Waiting…';} if(GD.ROLE==='stage') renderStage(); };
+
+// ===================================================================
+// DRAFT UI  (runs on the handheld: judge device, or solo device)
+// ===================================================================
+let lastPicker=-1, draftReady=false;
+function renderDraft(container){
+  const st=S(); const d=st.draft;
+  container.innerHTML='';
+  const scr=el('div','draft-screen');
+
+  if(d.picker!==lastPicker){ lastPicker=d.picker; draftReady=false; }
+
+  // interstitial: hide previous picks until next player taps ready
+  if(!draftReady){
+    const inter=el('div','interstitial');
+    inter.style.setProperty('--pc',colorOf(d.picker));
+    inter.innerHTML=`<div class="pass-icon">📱➡️</div>
+      <div class="pass-to">Pass the phone to</div>
+      <div class="pass-name" style="color:${colorOf(d.picker)}">${nameOf(d.picker)}</div>
+      <p class="note" style="max-width:300px;margin:10px auto">Others, look away! Your picks stay secret.</p>`;
+    const rdy=el('button','btn',"I'm "+nameOf(d.picker)+" — Ready"); 
+    rdy.onclick=()=>{ draftReady=true; renderDraft(container); };
+    inter.append(rdy);
+    scr.append(inter); container.append(scr); return;
+  }
+
+  const need=d.quota[d.picker]-d.claimed[d.picker];
+  const totalQuota=d.quota[d.picker];
+  scr.append(el('div','draft-head',
+    `<div class="dh-name" style="color:${colorOf(d.picker)}">${nameOf(d.picker)}'s territory</div>
+     <div class="dh-sub">Tap <b>1</b> block to claim · ${d.claimed[d.picker]}/${totalQuota} claimed${need>0?'':' (done)'}</div>`));
+
+  const pickable=new Set(GD.draftPickable(d.picker).map(b=>b.id));
+  const grid=el('div','grid-board'); grid.style.gridTemplateColumns=`repeat(${st.cols},1fr)`;
+  st.blocks.forEach(b=>{
+    const t=el('div','gb');
+    if(b.owner===d.picker){ t.classList.add('mine'); t.style.setProperty('--pc',colorOf(d.picker)); t.innerHTML=`<span class="cat-name">${b.cat}</span><span class="chk">✓</span>`; }
+    else if(b.owner!==null){ t.classList.add('taken'); t.innerHTML=`<span class="cat-name">${b.cat}</span><span class="lock">🔒</span>`; }
+    else { t.innerHTML=`<span class="cat-name">${b.cat}</span>`; if(pickable.has(b.id)){ t.classList.add('pickable'); t.onclick=()=>{ GD.sfx&&GD.sfx('pick'); judgeAct('draftPick',{blockId:b.id}); }; } else { t.classList.add('faded'); } }
+    grid.append(t);
+  });
+  scr.append(grid);
+
+  if(st.flash){ const f=el('div','draft-flash',st.flash); scr.append(f); st.flash=null; }
+
+  // progress: one dot per player, showing how much of their quota is claimed
+  const prog=el('div','draft-prog');
+  st.draft.order.forEach((pid)=>{
+    const filled=d.claimed[pid]>=d.quota[pid];
+    const dot=el('span','pdot'+(filled?' done':pid===d.picker?' active':''));
+    dot.style.background=colorOf(pid); prog.append(dot);
+  });
+  scr.append(prog);
+  container.append(scr);
+}
+
+// ===================================================================
+// STAGE SCREEN
+// ===================================================================
+let lastStageSig=null;
+function stageSig(st){
+  if(!st) return 'none';
+  const own=st.blocks.map(b=>b.owner).join(',');
+  const d=st.conquest&&st.conquest.duel;
+  return [st.phase, st.conquest&&st.conquest.sub, st.conquest&&st.conquest.conqueror, st.conquest&&st.conquest.count,
+    d&&d.blockId, d&&d.control, d&&d.answer&&d.answer.name, st.winner,
+    GD.connLive, GD.ROOM, st.flash, own].join('|');
+}
+function updateStageClocks(){
+  const st=S(); const d=st&&st.conquest&&st.conquest.duel; if(!d) return;
+  [d.challenger,d.defender].forEach(pid=>{
+    const e=document.getElementById('sclk-'+pid);
+    if(e){ e.textContent=d.time[pid]; e.classList.toggle('low',d.time[pid]<=10); }
+  });
+}
+function renderStage(){
+  if(GD.ROLE!=='stage' && !GD.soloMode) return;
+  const st=S(); if(!st) return;
+  const host = GD.soloMode ? $('soloStage') : app;
+  // GUARD: if nothing structural changed (just a clock tick), update numbers only
+  const sig=stageSig(st);
+  if(sig===lastStageSig && host.querySelector && host.querySelector('#stageScreen')){ updateStageClocks(); return; }
+  lastStageSig=sig;
+  if(!GD.soloMode) app.innerHTML='';
+  host.innerHTML='';
+  const scr=el('div'); scr.id='stageScreen';
+
+  const head=el('div','stage-head');
+  const alive=st.players.filter(p=>!p.out).length;
+  head.innerHTML=`<div class="mini-logo">GRID DUEL</div><div class="roundinfo">${st.players.length} players · ${alive} in</div>`;
+  if(!GD.soloMode){ const pill=el('div','status-pill'+(GD.connLive?' live':'')); pill.innerHTML=`<span class="dot"></span><span class="txt">${GD.connLive?'Judge connected':'Waiting…'}</span> · ${GD.ROOM}`; head.append(pill); }
+  scr.append(head);
+
+  if(st.phase==='draft'){
+    if(!GD.soloMode && !GD.connLive){
+      scr.append(roomCodeCard());
+    } else {
+      const wait=el('div','stage-center');
+      wait.innerHTML=`<div class="big-emoji">🗺️</div><h2>Drafting territories…</h2>
+        <p class="note">Players are secretly claiming land on the judge device. The board reveals when the draft is done.</p>`;
+      scr.append(wait);
+    }
+  }
+  else if(st.phase==='conquest'){
+    if(st.conquest.sub!=='countdown'){ document.querySelectorAll('.countdown').forEach(x=>x.remove()); }
+    if(st.conquest.sub==='duel'){ scr.append(buildDuelStage(st)); }
+    else if(st.conquest.sub==='countdown'){ scr.append(buildBoardStage(st)); buildCountdown(st); }
+    else { scr.append(buildBoardStage(st)); }
+  }
+  else if(st.phase==='gameover'){ document.querySelectorAll('.countdown').forEach(x=>x.remove()); scr.append(buildBoardStage(st)); buildWinnerOverlay(st); }
+
+  host.append(scr);
+}
+
+function buildCountdown(st){
+  const d=st.conquest.duel; if(!d) return;
+  // remove any stale overlay first
+  document.querySelectorAll('.countdown').forEach(x=>x.remove());
+  const o=el('div','countdown');
+  const n=st.conquest.count;
+  o.innerHTML=`<div class="cd-vs"><b style="color:${colorOf(d.challenger)}">${nameOf(d.challenger)}</b> vs <b style="color:${colorOf(d.defender)}">${nameOf(d.defender)}</b></div>
+    <div class="cd-cat">${d.cat}</div>
+    <div class="cd-num cd-pop ${n<=0?'go':''}">${n>0?n:'GO!'}</div>`;
+  const host = GD.soloMode ? ($('soloStage')||app) : app;
+  host.append(o);
+}
+
+function roomCodeCard(){
+  const c=el('div','roomcode');
+  c.innerHTML=`<div class="label">Judge joins with code</div><div class="code">${GD.ROOM}</div>
+    <div class="status-pill"><span class="dot"></span><span class="txt">Waiting…</span></div>
+    <p class="note" style="max-width:360px;margin:14px auto 0">Open this game on a 2nd phone → <b>Be the Judge</b> → enter this code. Players draft on that phone.</p>`;
+  return c;
+}
+
+function buildBoardStage(st){
+  const wrap=el('div','board-wrap');
+  const cq=st.conquest;
+  if(st.flash){ wrap.append(el('div','stage-flash',st.flash)); }
+  else if(cq&&cq.sub==='chooseTarget'){ wrap.append(el('div','stage-flash','🎯 '+nameOf(cq.conqueror)+' — pick a 🎯 target')); }
+  const grid=el('div','grid-board big'); grid.style.gridTemplateColumns=`repeat(${st.cols},1fr)`;
+  const choosing = cq&&cq.sub==='chooseTarget';
+  const targets = choosing ? new Set(GD.attackTargets(cq.conqueror).map(b=>b.id)) : new Set();
+  st.blocks.forEach(b=>{
+    const t=el('div','gb owned'); t.style.setProperty('--pc',colorOf(b.owner));
+    if(cq&&b.owner===cq.conqueror) t.classList.add('conq');
+    if(targets.has(b.id)) t.classList.add('target');
+    // During target-selection, dim everything that's neither the conqueror's land nor a target
+    if(choosing && b.owner!==cq.conqueror && !targets.has(b.id)) t.classList.add('faded');
+    if(b.id===justWonId) t.classList.add('just-won');
+    t.innerHTML=`<span class="cat-name">${b.cat}</span><span class="ot">${nameOf(b.owner)}</span>`;
+    grid.append(t);
+  });
+  wrap.append(grid);
+  wrap.append(buildMiniScores(st));
+  return wrap;
+}
+let justWonId=null;
+
+function buildDuelStage(st){
+  const d=st.conquest.duel;
+  const q=el('div','qstage');
+  const ch=st.players.find(p=>p.id===d.challenger), df=st.players.find(p=>p.id===d.defender);
+  const banner=el('div','duel-banner');
+  banner.append(duelSide(ch,d.time[ch.id],d.control===ch.id), el('div','duel-vs','VS'), duelSide(df,d.time[df.id],d.control===df.id));
+  q.append(banner);
+  q.insertAdjacentHTML('beforeend',`<div class="cat-banner">${d.cat}</div>
+    <div class="img-frame"><span class="ld">Loading clue…</span></div>
+    <div class="qcount">${nameOf(d.control)} — name it! (correct = hand off)</div>`);
+  loadImageInto(q.querySelector('.img-frame'),d.answer);
+  return q;
+}
+function duelSide(p,secs,active){
+  const d=el('div','duel-side'+(active?' active-turn':'')); d.style.setProperty('--sc',p.color);
+  d.innerHTML=`<div class="nm">${p.name}</div><div class="clk mono${secs<=10?' low':''}" id="sclk-${p.id}">${secs}</div>`;
+  return d;
+}
+function buildMiniScores(st){
+  const sb=el('div','mini-scores');
+  [...st.players].sort((a,b)=>GD.tileCount(b.id)-GD.tileCount(a.id)).forEach(p=>{
+    const r=el('div','ms-chip'+(p.out?' out':'')); r.style.setProperty('--pc',p.color);
+    r.innerHTML=`<span class="sw"></span>${p.name} <b>${GD.tileCount(p.id)}</b>`;
+    sb.append(r);
+  });
+  return sb;
+}
+async function resolveImage(ans){
+  // Uses the on-device photo cache (instant + offline after first view).
+  if(ans && ans.img) return ans.img;
+  if(ans && ans.wiki){
+    let src=await GD.getImage({wiki:ans.wiki});
+    if(!src){ await new Promise(r=>setTimeout(r,400)); src=await GD.getImage({wiki:ans.wiki}); }
+    return src;
+  }
+  return null;
+}
+async function loadImageInto(frame,ans){
+  if(!frame) return;
+  frame.innerHTML='<span class="ld">Loading clue…</span>';
+  const src=await resolveImage(ans);
+  if(!frame.isConnected && frame.parentNode===null) return; // frame removed mid-load
+  if(src){
+    const img=new Image();
+    img.alt=''; img.className='clue-img';
+    img.onload=()=>{ frame.innerHTML=''; frame.appendChild(img); };
+    img.onerror=()=>{ frame.innerHTML=`<div class="img-fallback"><div class="fb-q">?</div><div class="fb-cat">${ans&&ans.cat?ans.cat:''}</div></div>`; };
+    img.src=src;
+  } else {
+    frame.innerHTML=`<div class="img-fallback"><div class="fb-q">?</div><div class="fb-cat">${ans&&ans.cat?ans.cat:''}</div></div>`;
+  }
+}
+function buildWinnerOverlay(st){
+  const o=el('div','overlay');
+  const wn=st.winner!=null?nameOf(st.winner):'Nobody';
+  o.innerHTML=`<div class="crown">👑</div><h1>Conqueror</h1><div class="wname" style="color:${st.winner!=null?colorOf(st.winner):'#fff'}">${wn}</div>`;
+  const again=el('button','btn','Play Again'); again.onclick=()=>judgeAct('restart'); o.append(again);
+  (GD.soloMode?app:app).append(o);
+}
+
+// ===================================================================
+// JUDGE SCREEN
+// ===================================================================
+let lastJudgeSig=null;
+function judgeSig(st){
+  if(!st) return 'none';
+  const own=st.blocks.map(b=>b.owner).join(',');
+  const d=st.conquest&&st.conquest.duel;
+  return [st.phase, st.conquest&&st.conquest.sub, st.conquest&&st.conquest.conqueror, st.conquest&&st.conquest.count,
+    d&&d.blockId, d&&d.control, d&&d.answer&&d.answer.name, st.winner, own, GD.soloMode].join('|');
+}
+function updateJudgeClocks(){
+  const st=S(); const d=st&&st.conquest&&st.conquest.duel; if(!d) return;
+  [d.challenger,d.defender].forEach(pid=>{
+    const e=document.getElementById('jclk-'+pid);
+    if(e){ e.textContent=d.time[pid]+'s'; e.classList.toggle('low',d.time[pid]<=10); }
+  });
+  const ti=document.getElementById('jturnclk'); if(ti) ti.textContent=d.time[d.control]+'s';
+}
+function renderJudge(){
+  if(GD.ROLE!=='judge' && !GD.soloMode) return;
+  const st=S(); if(!st) return;
+  const host = GD.soloMode ? $('soloJudge') : app;
+
+  if(st.phase==='draft'){ lastJudgeSig=null; if(!GD.soloMode)app.innerHTML=''; host.innerHTML=''; renderDraft(host); return; }
+
+  // GUARD: skip full rebuild on plain clock ticks — just update the numbers
+  const sig=judgeSig(st);
+  if(sig===lastJudgeSig && host.querySelector && host.querySelector('#judgeScreen')){ updateJudgeClocks(); return; }
+  lastJudgeSig=sig;
+
+  if(!GD.soloMode) app.innerHTML='';
+  host.innerHTML='';
+  const scr=el('div'); scr.id='judgeScreen';
+  const head=el('div','judge-head'); head.innerHTML=`<div class="ttl">⚖️ JUDGE</div>`;
+  const right=el('div'); right.style.display='flex'; right.style.gap='8px'; right.style.alignItems='center';
+  right.append(soundToggle());
+  if(!GD.soloMode){ const pill=el('div','status-pill live'); pill.innerHTML=`<span class="dot"></span>Linked`; right.append(pill); }
+  head.append(right);
+  scr.append(head);
+
+  if(st.phase==='gameover'){ scr.append(judgeGameover(st)); }
+  else if(st.conquest.sub==='chooseTarget'){ scr.append(judgeChooseTarget(st)); }
+  else if(st.conquest.sub==='duel'){ scr.append(judgeDuel(st)); }
+  else if(st.conquest.sub==='countdown'){ const c=el('div','phase-card'); c.innerHTML=`<div class="ph-label">Get ready…</div><div class="conq-name" style="color:var(--gold)">${st.conquest.count>0?st.conquest.count:'GO!'}</div><p class="note">Duel starting — clock begins on GO.</p>`; scr.append(c); }
+  else { const c=el('div','phase-card'); c.innerHTML=`<p class="note">Selecting next conqueror…</p>`; scr.append(c); }
+
+  scr.append(buildScoreboard(st));
+  scr.append(rulesAccordion());
+  host.append(scr);
+}
+
+function judgeChooseTarget(st){
+  const cq=st.conquest;
+  const c=el('div','phase-card');
+  c.innerHTML=`<div class="ph-label">Conqueror</div>
+    <div class="conq-name" style="color:${colorOf(cq.conqueror)}">🎯 ${nameOf(cq.conqueror)}</div>
+    <p class="note">Tap an adjacent enemy block to challenge it, or stop to pass the turn.</p>`;
+  const targets=GD.attackTargets(cq.conqueror);
+  const grid=el('div','tile-picker');
+  if(targets.length===0){ c.append(el('p','note','No adjacent enemies — passing turn.')); }
+  targets.forEach(b=>{
+    const t=el('div','tp-tile owned'); t.style.setProperty('--pc',colorOf(b.owner));
+    t.innerHTML=`<div>${b.cat}</div><div class="o">${nameOf(b.owner)}</div>`;
+    t.onclick=()=>{ GD.sfx&&GD.sfx('select'); judgeAct('challenge',{blockId:b.id}); };
+    grid.append(t);
+  });
+  c.append(grid);
+  const stop=el('button','btn ghost small','✋ Stop — pass to random conqueror'); stop.style.marginTop='12px';
+  stop.onclick=()=>judgeAct('stopConquest'); c.append(stop);
+  return c;
+}
+
+function judgeDuel(st){
+  const d=st.conquest.duel;
+  const cur=st.players.find(p=>p.id===d.control);
+  const c=el('div','phase-card');
+  const opp=(d.control===d.challenger)?d.defender:d.challenger;
+  const pen=st.passPenalty||0;
+  c.innerHTML=`<div class="duel-clocks">
+      <div class="dc ${d.control===d.challenger?'on':''}" style="--sc:${colorOf(d.challenger)}"><span>${nameOf(d.challenger)}</span><b id="jclk-${d.challenger}" class="${d.time[d.challenger]<=10?'low':''}">${d.time[d.challenger]}s</b></div>
+      <div class="dc ${d.control===d.defender?'on':''}" style="--sc:${colorOf(d.defender)}"><span>${nameOf(d.defender)}</span><b id="jclk-${d.defender}" class="${d.time[d.defender]<=10?'low':''}">${d.time[d.defender]}s</b></div>
+    </div>
+    <div class="judge-turn-info">Answering: <b style="color:${cur.color}">${nameOf(d.control)}</b> · clock <span id="jturnclk">${d.time[d.control]}s</span></div>`;
+  c.append(answerReveal(d.answer));
+  const acts=el('div','judge-actions');
+  const ok=el('button','btn good','✓ Correct'); ok.onclick=()=>judgeAct('duelCorrect');
+  const no=el('button','btn hot',`✗ Miss / Pass  (−${pen}s)`); no.onclick=()=>judgeAct('duelMiss');
+  acts.append(ok,no); c.append(acts);
+  c.insertAdjacentHTML('beforeend',`<p class="note" style="margin-top:10px"><b>Correct</b> → hands control to ${nameOf(opp)} (their clock runs). <b>Miss/Pass</b> → ${nameOf(d.control)} loses <b>${pen}s</b> and keeps going, burning their own clock. Duel ends when a clock hits 0.</p>`);
+  return c;
+}
+
+function answerReveal(ans){
+  const r=el('div','answer-reveal');
+  r.innerHTML=`<div class="a-label">Answer (judge only)</div><div class="a-name">${ans.name}</div>`;
+  const img=el('img','a-img'); resolveImage(ans).then(s=>{ if(s)img.src=s; else img.style.display='none'; });
+  r.append(img); return r;
+}
+
+function judgeGameover(st){
+  const c=el('div','phase-card');
+  c.innerHTML=`<div class="ph-label">Game Over</div><div class="conq-name" style="color:${st.winner!=null?colorOf(st.winner):'#fff'}">👑 ${st.winner!=null?nameOf(st.winner):'No winner'} conquered the board!</div>`;
+  const r=el('button','btn good','Play Again'); r.style.marginTop='12px'; r.onclick=()=>judgeAct('restart'); c.append(r);
+  return c;
+}
+
+function buildScoreboard(st){
+  const c=el('div','phase-card');
+  c.innerHTML=`<div class="ph-label">Territory</div>`;
+  const sb=el('div','scoreboard');
+  [...st.players].sort((a,b)=>GD.tileCount(b.id)-GD.tileCount(a.id)).forEach(p=>{
+    const r=el('div','sb-row'+(p.out?' out':'')); r.style.setProperty('--pc',p.color);
+    r.innerHTML=`<span class="nm">${p.name}</span><span class="ct">${GD.tileCount(p.id)}</span>`;
+    sb.append(r);
+  });
+  c.append(sb); return c;
+}
+
+function rulesAccordion(){
+  const d=el('details');
+  d.innerHTML=`<summary>📖 Rules</summary>
+    <ul>
+      <li><b>Draft:</b> each player secretly claims a connected block of categories (pass the phone).</li>
+      <li><b>Conquer:</b> a random border owner becomes the conqueror and challenges an adjacent enemy block.</li>
+      <li><b>Duel:</b> the controller's clock ticks. <b>Correct</b> hands control to the opponent (their clock now runs). <b>Miss/Pass</b> keeps you in control, costs a time penalty, and keeps burning your own clock.</li>
+      <li><b>Win a duel:</b> the other player's clock hits <b>0</b>. Pictures keep coming until then — one correct answer never ends it.</li>
+      <li><b>Spoils:</b> if the challenger wins, they take that one tile and may challenge again or stop. If the defender wins, the turn passes to a new random conqueror.</li>
+      <li><b>Out:</b> own 0 blocks and you're eliminated. <b>Win:</b> conquer the entire board.</li>
+    </ul>`;
+  return d;
+}
+
+// ===================================================================
+// SOLO root
+// ===================================================================
+function renderSoloRoot(){
+  app.innerHTML='';
+  const w=el('div','wrap');
+  const s=el('div'); s.id='soloStage';
+  const dv=el('div','divider'); dv.style.margin='16px 0';
+  const j=el('div'); j.id='soloJudge';
+  w.append(s,dv,j); app.append(w);
+}
+
+// ---- sound toggle + capture-animation hook ----
+function soundToggle(){
+  const b=el('button','snd-toggle'+(GD.getSound()?'':' off'), GD.getSound()?'🔊':'🔇');
+  b.onclick=()=>{ GD.setSound(!GD.getSound()); b.textContent=GD.getSound()?'🔊':'🔇'; b.classList.toggle('off',!GD.getSound()); GD.sfx&&GD.sfx('pick'); };
+  return b;
+}
+window.__markWon=(id)=>{ justWonId=id; setTimeout(()=>{ justWonId=null; },650); };
+
+// wire to logic + boot
+window.__renderStage=renderStage;
+window.__renderJudge=renderJudge;
+// unlock Web Audio on first gesture (browsers require it)
+function unlockAudio(){ GD.setSound(GD.getSound()); GD.sfx&&GD.sfx('pick'); document.removeEventListener('pointerdown',unlockAudio); }
+document.addEventListener('pointerdown',unlockAudio);
+
+// --- Photo connectivity self-check ---------------------------------------
+// Silently tests whether Wikipedia images are reachable from THIS device/way
+// of opening the file. If not, shows a clear banner so blank photos are never
+// a silent mystery. Runs once, a moment after load.
+function showPhotoBanner(msg){
+  let b=document.getElementById('photoBanner');
+  if(!b){ b=document.createElement('div'); b.id='photoBanner'; b.className='photo-banner'; document.body.appendChild(b); }
+  b.innerHTML=msg+' <button onclick="this.parentNode.remove()">✕</button>';
+}
+async function photoSelfCheck(){
+  try{
+    const src=await GD.fetchImage('Earth');           // a page guaranteed to have an image
+    if(src){
+      // also confirm the image element can actually load it
+      const okImg=await new Promise(res=>{ const im=new Image(); im.onload=()=>res(true); im.onerror=()=>res(false); im.src=src; setTimeout(()=>res(false),6000); });
+      if(!okImg) showPhotoBanner('⚠️ Photos found but blocked from displaying. If you opened this file directly, try a different browser, or host the file online.');
+    } else {
+      showPhotoBanner('⚠️ Can’t reach Wikipedia for photos. Check your internet connection. (Some networks/VPNs or opening the file offline will block images.)');
+    }
+  }catch(e){
+    showPhotoBanner('⚠️ Photos can’t load on this device right now — Wikipedia couldn’t be reached.');
+  }
+}
+setTimeout(photoSelfCheck, 1200);
+
+renderMenu();
+})();
+
+</script>
+</body>
+</html>

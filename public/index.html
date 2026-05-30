@@ -104,10 +104,10 @@ h1,h2,h3{font-family:'Anton',sans-serif;font-weight:400;letter-spacing:.5px;text
 /* =========================================================
    STAGE SCREEN (the big shared display)
    ========================================================= */
-#stageScreen{display:flex;flex-direction:column;min-height:100vh;padding:14px}
-.stage-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
-.stage-head .mini-logo{font-family:'Anton';font-size:22px;color:var(--gold);letter-spacing:1px}
-.stage-head .roundinfo{font-size:13px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:1px}
+#stageScreen{display:flex;flex-direction:column;height:100vh;height:100dvh;padding:clamp(6px,1.5vmin,14px);overflow:hidden}
+.stage-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:clamp(4px,1vmin,12px);flex-shrink:0}
+.stage-head .mini-logo{font-family:'Anton';font-size:clamp(15px,2.4vmin,22px);color:var(--gold);letter-spacing:1px}
+.stage-head .roundinfo{font-size:clamp(10px,1.5vmin,13px);color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:1px}
 
 /* Grid of category tiles */
 .board{
@@ -258,17 +258,20 @@ details ul{padding-left:18px}
 /* ---- Grid board (shared by draft + stage) ---- */
 /* ===== BOARD TILES — contained ownership, no glow bleed ===== */
 .grid-board{display:grid;gap:9px;width:100%}
-.grid-board.big{gap:11px;flex:1}
+.grid-board.big{gap:clamp(4px,0.8vmin,11px);flex:1;height:100%;min-height:0}
+/* On the stage, tiles fill their grid cell (rows are sized to fit the screen).
+   Draft grid keeps square-ish tiles via aspect-ratio. */
+.grid-board.big .gb{aspect-ratio:auto;height:100%;min-height:0}
 .gb{position:relative;aspect-ratio:1;border-radius:14px;
   background:#161d3f;border:1.5px solid rgba(255,255,255,.07);
   display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;
-  font-size:9.5px;font-weight:800;line-height:1.15;padding:6px 5px;text-transform:uppercase;letter-spacing:.3px;
+  font-size:clamp(8px,1.3vmin,15px);font-weight:800;line-height:1.15;padding:5px;text-transform:uppercase;letter-spacing:.3px;
   color:#cdd5f5;overflow:hidden;
   transition:transform .28s cubic-bezier(.2,.9,.3,1.2), border-color .25s, background .35s, opacity .25s;}
 .gb span{position:relative;z-index:3}
-.gb .ot{font-size:8px;font-weight:800;margin-top:3px;opacity:.85;letter-spacing:.6px}
-.gb .chk{font-size:15px;margin-top:3px}
-.gb .lock{font-size:11px;opacity:.5;margin-top:2px}
+.gb .ot{font-size:clamp(7px,1vmin,12px);font-weight:800;margin-top:3px;opacity:.85;letter-spacing:.6px}
+.gb .chk{font-size:clamp(12px,2vmin,18px);margin-top:3px}
+.gb .lock{font-size:clamp(9px,1.3vmin,13px);opacity:.5;margin-top:2px}
 
 /* OWNED: muted tinted fill + solid color top band, fully contained */
 .gb.owned, .gb.mine{
@@ -327,15 +330,15 @@ details ul{padding-left:18px}
 .gb.just-won{animation:capturePop .55s cubic-bezier(.2,.9,.3,1.4)}
 @keyframes capturePop{0%{transform:scale(.6);opacity:.3}60%{transform:scale(1.12)}100%{transform:scale(1)}}
 
-.board-wrap{flex:1;display:flex;flex-direction:column;gap:14px;justify-content:center}
-.stage-flash{text-align:center;font-family:'Anton';font-size:clamp(18px,4.5vw,30px);color:var(--gold);padding:6px;
+.board-wrap{flex:1;display:flex;flex-direction:column;gap:clamp(6px,1.2vmin,14px);justify-content:center;min-height:0}
+.stage-flash{text-align:center;font-family:'Anton';font-size:clamp(15px,3vmin,30px);padding:clamp(2px,0.6vmin,6px);flex-shrink:0;color:var(--gold);
   letter-spacing:.5px;text-shadow:0 2px 12px rgba(255,210,63,.35);animation:flashIn .4s ease}
 @keyframes flashIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
 .stage-center{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:10px}
 .big-emoji{font-size:60px}
 
-.mini-scores{display:flex;flex-wrap:wrap;gap:7px;justify-content:center}
-.ms-chip{display:inline-flex;align-items:center;gap:7px;background:rgba(20,26,58,.8);border-radius:99px;padding:6px 14px;font-size:12px;font-weight:800;border:1px solid rgba(255,255,255,.06)}
+.mini-scores{display:flex;flex-wrap:wrap;gap:clamp(4px,1vmin,7px);justify-content:center;flex-shrink:0}
+.ms-chip{display:inline-flex;align-items:center;gap:7px;background:rgba(20,26,58,.8);border-radius:99px;padding:clamp(3px,0.8vmin,6px) clamp(8px,1.5vmin,14px);font-size:clamp(10px,1.5vmin,12px);font-weight:800;border:1px solid rgba(255,255,255,.06)}
 .ms-chip .sw{width:11px;height:11px;border-radius:4px;background:var(--pc);box-shadow:0 0 0 2px color-mix(in srgb,var(--pc) 30%, transparent)}
 .ms-chip b{color:#fff;background:var(--pc);padding:1px 7px;border-radius:99px;font-size:11px;margin-left:2px}
 .ms-chip.out{opacity:.4;text-decoration:line-through}
@@ -371,6 +374,36 @@ details ul{padding-left:18px}
 #stageScreen,#judgeScreen{animation:viewFade .35s ease}
 @keyframes viewFade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 .qstage{animation:viewFade .4s ease}
+/* ---- Multiplayer: lobby, player screen, judge ---- */
+.lobby-wrap{text-align:center}
+.lobby-head .logo-sm{font-family:'Anton';color:var(--gold);font-size:18px;letter-spacing:1px}
+.lobby-head h2{margin:10px 0 4px}
+.join-code{font-family:'Anton';font-size:clamp(40px,12vw,72px);letter-spacing:8px;color:var(--cool);
+  background:rgba(45,226,230,.08);border:2px dashed rgba(45,226,230,.4);border-radius:16px;padding:12px 8px;margin:14px 0}
+.lobby-list{display:flex;flex-direction:column;gap:8px;margin:8px 0}
+.lobby-player{display:flex;align-items:center;gap:10px;background:var(--bg2);border:1px solid var(--line);border-left:4px solid var(--pc,#fff);border-radius:10px;padding:11px 14px;text-align:left}
+.lobby-player .lp-dot{width:10px;height:10px;border-radius:50%;background:var(--pc,#fff);box-shadow:0 0 8px var(--pc,#fff)}
+.lobby-player .lp-name{flex:1;font-weight:800}
+.lobby-player .lp-tag{font-size:11px;color:var(--good);font-weight:800;text-transform:uppercase;letter-spacing:1px}
+.note.dim{opacity:.6}
+.player-wrap{min-height:100vh;min-height:100dvh}
+.player-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.player-head .logo-sm{font-family:'Anton';color:var(--gold);font-size:16px;letter-spacing:1px}
+.center-card{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:8px;padding:40px 16px;min-height:50vh}
+.center-card .big-emoji{font-size:64px}
+.turn-banner{text-align:center;font-family:'Anton';font-size:clamp(18px,5vw,26px);padding:12px;border-radius:14px;margin-bottom:12px;
+  background:var(--bg2);border:1px solid var(--line);color:var(--muted)}
+.turn-banner.mine{background:linear-gradient(180deg,rgba(61,220,151,.2),rgba(61,220,151,.06));border-color:var(--good);color:var(--good);
+  animation:pulseGlow 1.6s infinite}
+@keyframes pulseGlow{0%,100%{box-shadow:0 0 0 rgba(61,220,151,0)}50%{box-shadow:0 0 22px rgba(61,220,151,.4)}}
+.grid-board.mini{gap:4px;max-width:320px;margin:14px auto;opacity:.7}
+.grid-board.mini .mini-gb{aspect-ratio:1;border-radius:6px;background:#1a2147;border:1px solid rgba(255,255,255,.05)}
+.grid-board.mini .mini-gb.owned{background:var(--pc);box-shadow:0 0 6px var(--pc)}
+.img-frame.player-clue{width:min(86vw,420px);margin:0 auto}
+.ms-chip.me{outline:2px solid var(--gold);outline-offset:1px}
+.ms-chip.active-turn{box-shadow:0 0 0 2px var(--pc);animation:turnPulse 1.4s infinite}
+@keyframes turnPulse{0%,100%{box-shadow:0 0 0 2px var(--pc)}50%{box-shadow:0 0 14px 2px var(--pc)}}
+.ms-chip .ms-dot{width:8px;height:8px;border-radius:50%;background:var(--pc,#fff);display:inline-block;margin-right:5px}
 </style>
 </head>
 <body>
@@ -379,9 +412,8 @@ details ul{padding-left:18px}
 
 <!-- content.js injected below by build -->
 <script id="contentScript">
-// Game content: 50 categories x 25 answers each (1250 total)
-// Each answer: [displayName, wikipediaTitle] - image fetched live from Wikipedia
-const GAME_CONTENT = {"Hollywood Actors":[["Bradley Cooper","Bradley Cooper"],["Leonardo DiCaprio","Leonardo DiCaprio"],["Tom Hanks","Tom Hanks"],["Denzel Washington","Denzel Washington"],["Brad Pitt","Brad Pitt"],["Morgan Freeman","Morgan Freeman"],["Robert De Niro","Robert De Niro"],["Al Pacino","Al Pacino"],["Johnny Depp","Johnny Depp"],["Will Smith","Will Smith"],["Tom Cruise","Tom Cruise"],["Keanu Reeves","Keanu Reeves"],["Samuel L. Jackson","Samuel L. Jackson"],["Matt Damon","Matt Damon"],["Ryan Gosling","Ryan Gosling"],["Hugh Jackman","Hugh Jackman"],["Christian Bale","Christian Bale"],["Joaquin Phoenix","Joaquin Phoenix"],["Jake Gyllenhaal","Jake Gyllenhaal"],["Chris Hemsworth","Chris Hemsworth"],["Robert Downey Jr.","Robert Downey Jr."],["Mark Wahlberg","Mark Wahlberg"],["Jude Law","Jude Law"],["Daniel Craig","Daniel Craig"],["Idris Elba","Idris Elba"]],"Hollywood Actresses":[["Meryl Streep","Meryl Streep"],["Jennifer Lawrence","Jennifer Lawrence"],["Scarlett Johansson","Scarlett Johansson"],["Angelina Jolie","Angelina Jolie"],["Julia Roberts","Julia Roberts"],["Nicole Kidman","Nicole Kidman"],["Cate Blanchett","Cate Blanchett"],["Charlize Theron","Charlize Theron"],["Emma Stone","Emma Stone"],["Natalie Portman","Natalie Portman"],["Anne Hathaway","Anne Hathaway"],["Sandra Bullock","Sandra Bullock"],["Viola Davis","Viola Davis"],["Margot Robbie","Margot Robbie"],["Emma Watson","Emma Watson"],["Jennifer Aniston","Jennifer Aniston"],["Reese Witherspoon","Reese Witherspoon"],["Kate Winslet","Kate Winslet"],["Halle Berry","Halle Berry"],["Zendaya","Zendaya"],["Jessica Chastain","Jessica Chastain"],["Amy Adams","Amy Adams"],["Sandra Oh","Sandra Oh"],["Florence Pugh","Florence Pugh"],["Saoirse Ronan","Saoirse Ronan"]],"World Flags":[["Japan","Flag of Japan"],["Brazil","Flag of Brazil"],["Canada","Flag of Canada"],["France","Flag of France"],["Germany","Flag of Germany"],["Italy","Flag of Italy"],["United Kingdom","Flag of the United Kingdom"],["United States","Flag of the United States"],["India","Flag of India"],["China","Flag of China"],["Mexico","Flag of Mexico"],["Australia","Flag of Australia"],["South Korea","Flag of South Korea"],["Spain","Flag of Spain"],["Argentina","Flag of Argentina"],["Egypt","Flag of Egypt"],["South Africa","Flag of South Africa"],["Saudi Arabia","Flag of Saudi Arabia"],["Turkey","Flag of Turkey"],["Sweden","Flag of Sweden"],["Switzerland","Flag of Switzerland"],["Greece","Flag of Greece"],["Nigeria","Flag of Nigeria"],["Kenya","Flag of Kenya"],["Portugal","Flag of Portugal"]],"Animals":[["Lion","Lion"],["Tiger","Tiger"],["Elephant","Elephant"],["Giraffe","Giraffe"],["Zebra","Zebra"],["Kangaroo","Kangaroo"],["Panda","Giant panda"],["Penguin","Penguin"],["Dolphin","Dolphin"],["Koala","Koala"],["Cheetah","Cheetah"],["Gorilla","Gorilla"],["Hippopotamus","Hippopotamus"],["Rhinoceros","Rhinoceros"],["Crocodile","Crocodile"],["Octopus","Octopus"],["Owl","Owl"],["Flamingo","Flamingo"],["Polar bear","Polar bear"],["Wolf","Wolf"],["Fox","Fox"],["Camel","Camel"],["Peacock","Peafowl"],["Sloth","Sloth"],["Chameleon","Chameleon"]],"Dog Breeds":[["Labrador Retriever","Labrador Retriever"],["German Shepherd","German Shepherd"],["Golden Retriever","Golden Retriever"],["Bulldog","Bulldog"],["Poodle","Poodle"],["Beagle","Beagle"],["Rottweiler","Rottweiler"],["Dachshund","Dachshund"],["Siberian Husky","Siberian Husky"],["Chihuahua","Chihuahua (dog)"],["Boxer","Boxer (dog)"],["Pug","Pug"],["Border Collie","Border Collie"],["Doberman","Dobermann"],["Great Dane","Great Dane"],["Shih Tzu","Shih Tzu"],["Pomeranian","Pomeranian (dog)"],["Corgi","Pembroke Welsh Corgi"],["Saint Bernard","St. Bernard (dog)"],["Dalmatian","Dalmatian (dog)"],["Australian Shepherd","Australian Shepherd"],["Cocker Spaniel","Cocker Spaniel"],["Maltese","Maltese dog"],["Akita","Akita (dog)"],["Bernese Mountain Dog","Bernese Mountain Dog"]],"Fruits":[["Apple","Apple"],["Banana","Banana"],["Orange","Orange (fruit)"],["Strawberry","Strawberry"],["Pineapple","Pineapple"],["Watermelon","Watermelon"],["Grapes","Grape"],["Mango","Mango"],["Kiwifruit","Kiwifruit"],["Pear","Pear"],["Peach","Peach"],["Cherry","Cherry"],["Lemon","Lemon"],["Pomegranate","Pomegranate"],["Avocado","Avocado"],["Coconut","Coconut"],["Papaya","Papaya"],["Fig","Fig"],["Raspberry","Raspberry"],["Blueberry","Blueberry"],["Plum","Plum"],["Apricot","Apricot"],["Dragonfruit","Pitaya"],["Lychee","Lychee"],["Passionfruit","Passiflora edulis"]],"Vegetables":[["Carrot","Carrot"],["Broccoli","Broccoli"],["Tomato","Tomato"],["Potato","Potato"],["Cucumber","Cucumber"],["Onion","Onion"],["Bell Pepper","Bell pepper"],["Eggplant","Eggplant"],["Spinach","Spinach"],["Cabbage","Cabbage"],["Cauliflower","Cauliflower"],["Corn","Maize"],["Pumpkin","Pumpkin"],["Lettuce","Lettuce"],["Garlic","Garlic"],["Beetroot","Beetroot"],["Celery","Celery"],["Mushroom","Edible mushroom"],["Radish","Radish"],["Asparagus","Asparagus"],["Zucchini","Zucchini"],["Sweet Potato","Sweet potato"],["Peas","Pea"],["Ginger","Ginger"],["Okra","Okra"]],"US Presidents":[["George Washington","George Washington"],["Abraham Lincoln","Abraham Lincoln"],["Thomas Jefferson","Thomas Jefferson"],["Theodore Roosevelt","Theodore Roosevelt"],["Franklin D. Roosevelt","Franklin D. Roosevelt"],["John F. Kennedy","John F. Kennedy"],["Ronald Reagan","Ronald Reagan"],["Barack Obama","Barack Obama"],["Bill Clinton","Bill Clinton"],["George W. Bush","George W. Bush"],["Richard Nixon","Richard Nixon"],["Dwight D. Eisenhower","Dwight D. Eisenhower"],["Harry S. Truman","Harry S. Truman"],["Jimmy Carter","Jimmy Carter"],["Gerald Ford","Gerald Ford"],["Lyndon B. Johnson","Lyndon B. Johnson"],["Ulysses S. Grant","Ulysses S. Grant"],["Andrew Jackson","Andrew Jackson"],["James Madison","James Madison"],["John Adams","John Adams"],["Woodrow Wilson","Woodrow Wilson"],["Herbert Hoover","Herbert Hoover"],["Calvin Coolidge","Calvin Coolidge"],["William Taft","William Howard Taft"],["Joe Biden","Joe Biden"]],"World Landmarks":[["Eiffel Tower","Eiffel Tower"],["Statue of Liberty","Statue of Liberty"],["Great Wall of China","Great Wall of China"],["Taj Mahal","Taj Mahal"],["Colosseum","Colosseum"],["Big Ben","Big Ben"],["Sydney Opera House","Sydney Opera House"],["Christ the Redeemer","Christ the Redeemer (statue)"],["Pyramids of Giza","Giza pyramid complex"],["Leaning Tower of Pisa","Leaning Tower of Pisa"],["Golden Gate Bridge","Golden Gate Bridge"],["Mount Rushmore","Mount Rushmore"],["Machu Picchu","Machu Picchu"],["Burj Khalifa","Burj Khalifa"],["Petra","Petra"],["Stonehenge","Stonehenge"],["Brandenburg Gate","Brandenburg Gate"],["Sagrada Familia","Sagrada Família"],["Acropolis","Acropolis of Athens"],["Tower Bridge","Tower Bridge"],["Empire State Building","Empire State Building"],["Sphinx","Great Sphinx of Giza"],["Angkor Wat","Angkor Wat"],["Neuschwanstein Castle","Neuschwanstein Castle"],["Chichen Itza","Chichen Itza"]],"Musicians & Singers":[["Michael Jackson","Michael Jackson"],["Beyonce","Beyoncé"],["Elvis Presley","Elvis Presley"],["Madonna","Madonna"],["Freddie Mercury","Freddie Mercury"],["Taylor Swift","Taylor Swift"],["Bob Marley","Bob Marley"],["Adele","Adele"],["Elton John","Elton John"],["Rihanna","Rihanna"],["Bruno Mars","Bruno Mars"],["Lady Gaga","Lady Gaga"],["Ed Sheeran","Ed Sheeran"],["Drake","Drake (musician)"],["Stevie Wonder","Stevie Wonder"],["Whitney Houston","Whitney Houston"],["David Bowie","David Bowie"],["Prince","Prince (musician)"],["Justin Bieber","Justin Bieber"],["Ariana Grande","Ariana Grande"],["Billie Eilish","Billie Eilish"],["Bob Dylan","Bob Dylan"],["Frank Sinatra","Frank Sinatra"],["Eminem","Eminem"],["The Weeknd","The Weeknd"]],"Sports Stars":[["Lionel Messi","Lionel Messi"],["Cristiano Ronaldo","Cristiano Ronaldo"],["LeBron James","LeBron James"],["Michael Jordan","Michael Jordan"],["Serena Williams","Serena Williams"],["Roger Federer","Roger Federer"],["Usain Bolt","Usain Bolt"],["Tom Brady","Tom Brady"],["Tiger Woods","Tiger Woods"],["Muhammad Ali","Muhammad Ali"],["Rafael Nadal","Rafael Nadal"],["Kobe Bryant","Kobe Bryant"],["Neymar","Neymar"],["Stephen Curry","Stephen Curry"],["Lewis Hamilton","Lewis Hamilton"],["Floyd Mayweather","Floyd Mayweather Jr."],["Novak Djokovic","Novak Djokovic"],["Kylian Mbappe","Kylian Mbappé"],["Shaquille O'Neal","Shaquille O'Neal"],["David Beckham","David Beckham"],["Conor McGregor","Conor McGregor"],["Simone Biles","Simone Biles"],["Naomi Osaka","Naomi Osaka"],["Mike Tyson","Mike Tyson"],["Pele","Pelé"]],"Car Logos":[["Ferrari","Ferrari"],["Lamborghini","Lamborghini"],["Toyota","Toyota"],["BMW","BMW"],["Mercedes-Benz","Mercedes-Benz"],["Audi","Audi"],["Ford","Ford Motor Company"],["Honda","Honda"],["Volkswagen","Volkswagen"],["Porsche","Porsche"],["Tesla","Tesla, Inc."],["Chevrolet","Chevrolet"],["Nissan","Nissan"],["Jaguar","Jaguar Cars"],["Bentley","Bentley"],["Rolls-Royce","Rolls-Royce Motor Cars"],["Maserati","Maserati"],["Bugatti","Bugatti"],["Aston Martin","Aston Martin"],["Hyundai","Hyundai Motor Company"],["Kia","Kia"],["Mazda","Mazda"],["Subaru","Subaru"],["Volvo","Volvo Cars"],["Jeep","Jeep"]],"Birds":[["Eagle","Eagle"],["Owl","Owl"],["Flamingo","Flamingo"],["Peacock","Peafowl"],["Penguin","Penguin"],["Parrot","Parrot"],["Swan","Swan"],["Pelican","Pelican"],["Toucan","Toucan"],["Ostrich","Common ostrich"],["Hummingbird","Hummingbird"],["Robin","European robin"],["Woodpecker","Woodpecker"],["Pigeon","Columbidae"],["Crow","Crow"],["Seagull","Gull"],["Kingfisher","Kingfisher"],["Falcon","Falcon"],["Vulture","Vulture"],["Stork","Stork"],["Cardinal","Northern cardinal"],["Crane","Crane (bird)"],["Heron","Heron"],["Duck","Duck"],["Sparrow","Sparrow"]],"Famous Paintings":[["Mona Lisa","Mona Lisa"],["The Starry Night","The Starry Night"],["The Scream","The Scream"],["Girl with a Pearl Earring","Girl with a Pearl Earring"],["The Last Supper","The Last Supper (Leonardo)"],["The Persistence of Memory","The Persistence of Memory"],["Guernica","Guernica (Picasso)"],["American Gothic","American Gothic"],["The Birth of Venus","The Birth of Venus"],["The Kiss","The Kiss (Klimt)"],["Water Lilies","Water Lilies"],["The Night Watch","The Night Watch"],["Sunflowers","Sunflowers (Van Gogh series)"],["The Creation of Adam","The Creation of Adam"],["Las Meninas","Las Meninas"],["Whistler's Mother","Whistler's Mother"],["The Great Wave off Kanagawa","The Great Wave off Kanagawa"],["Cafe Terrace at Night","Café Terrace at Night"],["The School of Athens","The School of Athens"],["Liberty Leading the People","Liberty Leading the People"],["Nighthawks","Nighthawks"],["The Garden of Earthly Delights","The Garden of Earthly Delights"],["Bal du moulin de la Galette","Bal du moulin de la Galette"],["Composition with Red Blue and Yellow","Composition with Red, Blue and Yellow"],["The Son of Man","The Son of Man"]],"Tech Company Logos":[["Apple","Apple Inc."],["Google","Google"],["Microsoft","Microsoft"],["Amazon","Amazon (company)"],["Meta","Meta Platforms"],["Netflix","Netflix"],["Spotify","Spotify"],["Adobe","Adobe Inc."],["Intel","Intel"],["IBM","IBM"],["Oracle","Oracle Corporation"],["Samsung","Samsung"],["Sony","Sony"],["Nvidia","Nvidia"],["Twitter","Twitter"],["Uber","Uber"],["Airbnb","Airbnb"],["PayPal","PayPal"],["Dropbox","Dropbox"],["Slack","Slack Technologies"],["Zoom","Zoom Video Communications"],["LinkedIn","LinkedIn"],["Pinterest","Pinterest"],["Snapchat","Snap Inc."],["TikTok","TikTok"]],"Planets & Space":[["Earth","Earth"],["Mars","Mars"],["Jupiter","Jupiter"],["Saturn","Saturn"],["Mercury","Mercury (planet)"],["Venus","Venus"],["Neptune","Neptune"],["Uranus","Uranus"],["The Moon","Moon"],["The Sun","Sun"],["Pluto","Pluto"],["Milky Way","Milky Way"],["Halley's Comet","Halley's Comet"],["International Space Station","International Space Station"],["Hubble Telescope","Hubble Space Telescope"],["Apollo 11","Apollo 11"],["Space Shuttle","Space Shuttle"],["Saturn's Rings","Rings of Saturn"],["Andromeda Galaxy","Andromeda Galaxy"],["Solar Eclipse","Solar eclipse"],["Asteroid Belt","Asteroid belt"],["Black Hole","Black hole"],["Mars Rover","Mars rover"],["Voyager","Voyager 1"],["Orion Nebula","Orion Nebula"]],"Musical Instruments":[["Guitar","Guitar"],["Piano","Piano"],["Violin","Violin"],["Drums","Drum kit"],["Saxophone","Saxophone"],["Trumpet","Trumpet"],["Flute","Western concert flute"],["Cello","Cello"],["Harp","Harp"],["Accordion","Accordion"],["Clarinet","Clarinet"],["Trombone","Trombone"],["Banjo","Banjo"],["Ukulele","Ukulele"],["Double Bass","Double bass"],["Tuba","Tuba"],["Harmonica","Harmonica"],["Bagpipes","Bagpipes"],["Xylophone","Xylophone"],["Mandolin","Mandolin"],["Tambourine","Tambourine"],["Organ","Organ (music)"],["French Horn","French horn"],["Bongo Drums","Bongo drum"],["Sitar","Sitar"]],"Capital Cities":[["Paris","Paris"],["London","London"],["Tokyo","Tokyo"],["Rome","Rome"],["Cairo","Cairo"],["Moscow","Moscow"],["Washington D.C.","Washington, D.C."],["Beijing","Beijing"],["Berlin","Berlin"],["Madrid","Madrid"],["Athens","Athens"],["Amsterdam","Amsterdam"],["Vienna","Vienna"],["Dubai","Dubai"],["Bangkok","Bangkok"],["Istanbul","Istanbul"],["Sydney","Sydney"],["Rio de Janeiro","Rio de Janeiro"],["New Delhi","New Delhi"],["Singapore","Singapore"],["Seoul","Seoul"],["Mexico City","Mexico City"],["Toronto","Toronto"],["Barcelona","Barcelona"],["Venice","Venice"]],"Cartoon Characters":[["Mickey Mouse","Mickey Mouse"],["Bugs Bunny","Bugs Bunny"],["SpongeBob SquarePants","SpongeBob SquarePants"],["Homer Simpson","Homer Simpson"],["Pikachu","Pikachu"],["Scooby-Doo","Scooby-Doo"],["Tom and Jerry","Tom and Jerry"],["Donald Duck","Donald Duck"],["Garfield","Garfield"],["Snoopy","Snoopy"],["Popeye","Popeye"],["Bart Simpson","Bart Simpson"],["Daffy Duck","Daffy Duck"],["Goofy","Goofy"],["Woody Woodpecker","Woody Woodpecker"],["Felix the Cat","Felix the Cat"],["Betty Boop","Betty Boop"],["Road Runner","Wile E. Coyote and the Road Runner"],["Tweety","Tweety"],["Porky Pig","Porky Pig"],["Yogi Bear","Yogi Bear"],["Fred Flintstone","Fred Flintstone"],["Winnie the Pooh","Winnie-the-Pooh"],["Spider-Man","Spider-Man"],["Batman","Batman"]],"Insects & Bugs":[["Butterfly","Butterfly"],["Bee","Bee"],["Ant","Ant"],["Ladybug","Coccinellidae"],["Dragonfly","Dragonfly"],["Grasshopper","Grasshopper"],["Beetle","Beetle"],["Mosquito","Mosquito"],["Spider","Spider"],["Caterpillar","Caterpillar"],["Cricket","Cricket (insect)"],["Wasp","Wasp"],["Moth","Moth"],["Cockroach","Cockroach"],["Praying Mantis","Mantis"],["Firefly","Firefly"],["Scorpion","Scorpion"],["Centipede","Centipede"],["Snail","Snail"],["Termite","Termite"],["Tarantula","Tarantula"],["Stick Insect","Phasmatodea"],["Housefly","Housefly"],["Flea","Flea"],["Earthworm","Earthworm"]],"Currencies & Banknotes":[["US Dollar","United States dollar"],["Euro","Euro"],["British Pound","Pound sterling"],["Japanese Yen","Japanese yen"],["Swiss Franc","Swiss franc"],["Canadian Dollar","Canadian dollar"],["Australian Dollar","Australian dollar"],["Indian Rupee","Indian rupee"],["Chinese Yuan","Renminbi"],["Saudi Riyal","Saudi riyal"],["Russian Ruble","Russian ruble"],["Brazilian Real","Brazilian real"],["Mexican Peso","Mexican peso"],["South Korean Won","South Korean won"],["Turkish Lira","Turkish lira"],["South African Rand","South African rand"],["Egyptian Pound","Egyptian pound"],["Norwegian Krone","Norwegian krone"],["Swedish Krona","Swedish krona"],["Thai Baht","Thai baht"],["UAE Dirham","United Arab Emirates dirham"],["Singapore Dollar","Singapore dollar"],["Hong Kong Dollar","Hong Kong dollar"],["Polish Zloty","Polish złoty"],["Israeli Shekel","Israeli new shekel"]],"Trees & Plants":[["Oak","Oak"],["Pine","Pine"],["Palm Tree","Arecaceae"],["Maple","Maple"],["Bamboo","Bamboo"],["Cactus","Cactus"],["Willow","Willow"],["Birch","Birch"],["Redwood","Sequoia (genus)"],["Cherry Blossom","Cherry blossom"],["Baobab","Adansonia"],["Bonsai","Bonsai"],["Fern","Fern"],["Eucalyptus","Eucalyptus"],["Sunflower","Common sunflower"],["Rose","Rose"],["Tulip","Tulip"],["Orchid","Orchidaceae"],["Lavender","Lavandula"],["Lotus","Nelumbo nucifera"],["Venus Flytrap","Venus flytrap"],["Olive Tree","Olive"],["Sequoia","Sequoiadendron"],["Daffodil","Narcissus (plant)"],["Ivy","Hedera"]],"Famous Scientists":[["Albert Einstein","Albert Einstein"],["Isaac Newton","Isaac Newton"],["Charles Darwin","Charles Darwin"],["Marie Curie","Marie Curie"],["Nikola Tesla","Nikola Tesla"],["Galileo Galilei","Galileo Galilei"],["Stephen Hawking","Stephen Hawking"],["Thomas Edison","Thomas Edison"],["Nicolaus Copernicus","Nicolaus Copernicus"],["Louis Pasteur","Louis Pasteur"],["Alexander Graham Bell","Alexander Graham Bell"],["Michael Faraday","Michael Faraday"],["Gregor Mendel","Gregor Mendel"],["Niels Bohr","Niels Bohr"],["Max Planck","Max Planck"],["Carl Sagan","Carl Sagan"],["Alan Turing","Alan Turing"],["James Watson","James Watson"],["Rosalind Franklin","Rosalind Franklin"],["Richard Feynman","Richard Feynman"],["Erwin Schrodinger","Erwin Schrödinger"],["Robert Oppenheimer","J. Robert Oppenheimer"],["Ada Lovelace","Ada Lovelace"],["Werner Heisenberg","Werner Heisenberg"],["Jane Goodall","Jane Goodall"]],"Sea Creatures":[["Shark","Shark"],["Whale","Whale"],["Dolphin","Dolphin"],["Octopus","Octopus"],["Jellyfish","Jellyfish"],["Starfish","Starfish"],["Seahorse","Seahorse"],["Crab","Crab"],["Lobster","Lobster"],["Sea Turtle","Sea turtle"],["Stingray","Batoidea"],["Clownfish","Clownfish"],["Pufferfish","Tetraodontidae"],["Squid","Squid"],["Manatee","Manatee"],["Walrus","Walrus"],["Sea Otter","Sea otter"],["Eel","Eel"],["Swordfish","Swordfish"],["Orca","Orca"],["Seal","Pinniped"],["Coral","Coral"],["Anglerfish","Anglerfish"],["Hammerhead Shark","Hammerhead shark"],["Blue Whale","Blue whale"]],"Board & Video Games":[["Chess","Chess"],["Monopoly","Monopoly (game)"],["Scrabble","Scrabble"],["Tetris","Tetris"],["Pac-Man","Pac-Man"],["Minecraft","Minecraft"],["Super Mario","Super Mario"],["Checkers","Draughts"],["Poker","Poker"],["Sudoku","Sudoku"],["Rubik's Cube","Rubik's Cube"],["Jenga","Jenga"],["Risk","Risk (game)"],["Clue","Cluedo"],["Connect Four","Connect Four"],["Backgammon","Backgammon"],["Domino","Dominoes"],["Solitaire","Solitaire"],["Space Invaders","Space Invaders"],["Pong","Pong"],["Battleship","Battleship (game)"],["Uno","Uno (card game)"],["Mahjong","Mahjong"],["Dominoes","Dominoes"],["Go","Go (game)"]],"Tools & Hardware":[["Hammer","Hammer"],["Screwdriver","Screwdriver"],["Wrench","Wrench"],["Saw","Saw"],["Drill","Drill"],["Pliers","Pliers"],["Tape Measure","Tape measure"],["Level","Spirit level"],["Chisel","Chisel"],["Axe","Axe"],["Shovel","Shovel"],["Ladder","Ladder"],["Paintbrush","Paintbrush"],["Nail","Nail (fastener)"],["Screw","Screw"],["Bolt","Bolt (fastener)"],["Hand Plane","Plane (tool)"],["File","File (tool)"],["Clamp","Clamp (tool)"],["Crowbar","Crowbar (tool)"],["Sandpaper","Sandpaper"],["Pickaxe","Pickaxe"],["Sledgehammer","Sledgehammer"],["Mallet","Mallet"],["Vise","Vise"]],"Famous Buildings & Architecture":[["White House","White House"],["Buckingham Palace","Buckingham Palace"],["The Pentagon","The Pentagon"],["Sydney Harbour Bridge","Sydney Harbour Bridge"],["Petronas Towers","Petronas Towers"],["Chrysler Building","Chrysler Building"],["Flatiron Building","Flatiron Building"],["Notre-Dame","Notre-Dame de Paris"],["Hagia Sophia","Hagia Sophia"],["St. Peter's Basilica","St. Peter's Basilica"],["The Louvre","Louvre"],["Guggenheim Museum","Guggenheim Museum Bilbao"],["One World Trade Center","One World Trade Center"],["Shard","The Shard"],["Marina Bay Sands","Marina Bay Sands"],["Forbidden City","Forbidden City"],["Westminster Abbey","Westminster Abbey"],["Kremlin","Moscow Kremlin"],["Saint Basil's Cathedral","Saint Basil's Cathedral"],["Willis Tower","Willis Tower"],["CN Tower","CN Tower"],["Space Needle","Space Needle"],["Gateway Arch","Gateway Arch"],["Lincoln Memorial","Lincoln Memorial"],["Pantheon","Pantheon, Rome"]],"Desserts & Sweets":[["Chocolate Cake","Chocolate cake"],["Ice Cream","Ice cream"],["Donut","Doughnut"],["Cupcake","Cupcake"],["Cheesecake","Cheesecake"],["Macaron","Macaron"],["Tiramisu","Tiramisu"],["Brownie","Chocolate brownie"],["Pancakes","Pancake"],["Waffle","Waffle"],["Croissant","Croissant"],["Cookie","Cookie"],["Pie","Pie"],["Pudding","Pudding"],["Gelato","Gelato"],["Cotton Candy","Cotton candy"],["Churros","Churro"],["Eclair","Éclair"],["Muffin","Muffin"],["Pretzel","Pretzel"],["Baklava","Baklava"],["Creme Brulee","Crème brûlée"],["Jelly","Gelatin dessert"],["Marshmallow","Marshmallow"],["Fudge","Fudge"]],"Kitchen Items":[["Knife","Kitchen knife"],["Fork","Fork"],["Spoon","Spoon"],["Plate","Plate (dishware)"],["Cup","Cup"],["Bowl","Bowl"],["Pot","Cookware and bakeware"],["Frying Pan","Frying pan"],["Kettle","Kettle"],["Toaster","Toaster"],["Blender","Blender"],["Microwave","Microwave oven"],["Refrigerator","Refrigerator"],["Oven","Oven"],["Whisk","Whisk"],["Spatula","Spatula"],["Rolling Pin","Rolling pin"],["Grater","Grater"],["Colander","Colander"],["Cutting Board","Cutting board"],["Ladle","Ladle (spoon)"],["Teapot","Teapot"],["Corkscrew","Corkscrew"],["Mug","Mug"],["Chopsticks","Chopsticks"]],"Famous Mountains & Rivers":[["Mount Everest","Mount Everest"],["Mount Fuji","Mount Fuji"],["Kilimanjaro","Mount Kilimanjaro"],["Matterhorn","Matterhorn"],["Mount Rainier","Mount Rainier"],["Denali","Denali"],["K2","K2"],["Mont Blanc","Mont Blanc"],["Amazon River","Amazon River"],["Nile River","Nile"],["Mississippi River","Mississippi River"],["Yangtze River","Yangtze"],["Niagara Falls","Niagara Falls"],["Victoria Falls","Victoria Falls"],["Grand Canyon","Grand Canyon"],["Mount Vesuvius","Mount Vesuvius"],["Table Mountain","Table Mountain"],["Mount Etna","Mount Etna"],["Half Dome","Half Dome"],["Mount Sinai","Mount Sinai"],["Angel Falls","Angel Falls"],["Danube","Danube"],["Ganges","Ganges"],["Colorado River","Colorado River"],["Iguazu Falls","Iguazu Falls"]],"World Leaders & Politicians":[["Winston Churchill","Winston Churchill"],["Mahatma Gandhi","Mahatma Gandhi"],["Nelson Mandela","Nelson Mandela"],["Queen Elizabeth II","Elizabeth II"],["Abraham Lincoln","Abraham Lincoln"],["Martin Luther King Jr.","Martin Luther King Jr."],["Margaret Thatcher","Margaret Thatcher"],["Vladimir Putin","Vladimir Putin"],["Angela Merkel","Angela Merkel"],["Napoleon Bonaparte","Napoleon"],["Julius Caesar","Julius Caesar"],["Cleopatra","Cleopatra"],["Che Guevara","Che Guevara"],["Pope Francis","Pope Francis"],["Dalai Lama","14th Dalai Lama"],["Emmanuel Macron","Emmanuel Macron"],["Justin Trudeau","Justin Trudeau"],["King Charles III","Charles III"],["Theodore Roosevelt","Theodore Roosevelt"],["Charles de Gaulle","Charles de Gaulle"],["Mikhail Gorbachev","Mikhail Gorbachev"],["Indira Gandhi","Indira Gandhi"],["Kemal Ataturk","Mustafa Kemal Atatürk"],["Eva Peron","Eva Perón"],["Benjamin Franklin","Benjamin Franklin"]],"Famous Authors & Writers":[["William Shakespeare","William Shakespeare"],["Mark Twain","Mark Twain"],["Charles Dickens","Charles Dickens"],["Jane Austen","Jane Austen"],["Ernest Hemingway","Ernest Hemingway"],["J.K. Rowling","J. K. Rowling"],["George Orwell","George Orwell"],["Leo Tolstoy","Leo Tolstoy"],["Edgar Allan Poe","Edgar Allan Poe"],["Agatha Christie","Agatha Christie"],["F. Scott Fitzgerald","F. Scott Fitzgerald"],["Stephen King","Stephen King"],["J.R.R. Tolkien","J. R. R. Tolkien"],["Maya Angelou","Maya Angelou"],["Oscar Wilde","Oscar Wilde"],["Virginia Woolf","Virginia Woolf"],["Fyodor Dostoevsky","Fyodor Dostoevsky"],["Gabriel Garcia Marquez","Gabriel García Márquez"],["Franz Kafka","Franz Kafka"],["Emily Dickinson","Emily Dickinson"],["Toni Morrison","Toni Morrison"],["Roald Dahl","Roald Dahl"],["Herman Melville","Herman Melville"],["Victor Hugo","Victor Hugo"],["Dr. Seuss","Dr. Seuss"]],"Sports Equipment":[["Basketball","Basketball (ball)"],["Soccer Ball","Ball (association football)"],["Tennis Racket","Racket (sports equipment)"],["Baseball Bat","Baseball bat"],["Golf Club","Golf club"],["Hockey Stick","Hockey stick"],["Boxing Gloves","Boxing glove"],["Skateboard","Skateboard"],["Surfboard","Surfboard"],["Skis","Ski"],["Football Helmet","Football helmet"],["Dumbbell","Dumbbell"],["Bowling Pin","Bowling pin"],["Dartboard","Darts"],["Ping Pong Paddle","Table tennis racket"],["Cricket Bat","Cricket bat"],["Volleyball","Volleyball (ball)"],["Frisbee","Frisbee"],["Snowboard","Snowboard"],["Roller Skates","Roller skates"],["Catcher's Mitt","Baseball glove"],["Badminton Racket","Badminton"],["Whistle","Whistle"],["Stopwatch","Stopwatch"],["Trophy","Trophy"]],"Gemstones & Minerals":[["Diamond","Diamond"],["Ruby","Ruby"],["Emerald","Emerald"],["Sapphire","Sapphire"],["Amethyst","Amethyst"],["Topaz","Topaz"],["Opal","Opal"],["Pearl","Pearl"],["Jade","Jade"],["Turquoise","Turquoise"],["Garnet","Garnet"],["Aquamarine","Aquamarine (gem)"],["Quartz","Quartz"],["Amber","Amber"],["Onyx","Onyx"],["Gold","Gold"],["Silver","Silver"],["Platinum","Platinum"],["Copper","Copper"],["Obsidian","Obsidian"],["Coral","Coral"],["Citrine","Citrine"],["Tanzanite","Tanzanite"],["Malachite","Malachite"],["Lapis Lazuli","Lapis lazuli"]],"Weather & Natural Phenomena":[["Rainbow","Rainbow"],["Tornado","Tornado"],["Lightning","Lightning"],["Hurricane","Tropical cyclone"],["Snowflake","Snowflake"],["Aurora Borealis","Aurora"],["Volcano","Volcano"],["Tsunami","Tsunami"],["Sandstorm","Dust storm"],["Fog","Fog"],["Hailstone","Hail"],["Waterfall","Waterfall"],["Geyser","Geyser"],["Avalanche","Avalanche"],["Solar Eclipse","Solar eclipse"],["Cloud","Cloud"],["Iceberg","Iceberg"],["Glacier","Glacier"],["Whirlpool","Whirlpool"],["Sunset","Sunset"],["Earthquake","Earthquake"],["Flood","Flood"],["Drought","Drought"],["Monsoon","Monsoon"],["Frost","Frost"]],"Modes of Transport":[["Airplane","Airplane"],["Helicopter","Helicopter"],["Train","Train"],["Bicycle","Bicycle"],["Motorcycle","Motorcycle"],["Bus","Bus"],["Ship","Ship"],["Submarine","Submarine"],["Hot Air Balloon","Hot air balloon"],["Sailboat","Sailboat"],["Tractor","Tractor"],["Ambulance","Ambulance"],["Fire Truck","Fire engine"],["Taxi","Taxicab"],["Subway","Rapid transit"],["Tram","Tram"],["Gondola","Gondola"],["Canoe","Canoe"],["Scooter","Scooter (motorcycle)"],["Cruise Ship","Cruise ship"],["Cable Car","Cable car"],["Rickshaw","Rickshaw"],["Jet Ski","Personal water craft"],["Segway","Segway"],["Monorail","Monorail"]],"Office & School Supplies":[["Pencil","Pencil"],["Pen","Pen"],["Eraser","Eraser"],["Stapler","Stapler"],["Scissors","Scissors"],["Ruler","Ruler"],["Notebook","Notebook"],["Calculator","Calculator"],["Paperclip","Paper clip"],["Highlighter","Highlighter"],["Glue Stick","Glue stick"],["Tape Dispenser","Adhesive tape"],["Whiteboard","Whiteboard"],["Backpack","Backpack"],["Compass","Compass (drawing tool)"],["Protractor","Protractor"],["Hole Punch","Hole punch"],["Pencil Sharpener","Pencil sharpener"],["Globe","Globe"],["Chalk","Chalk"],["Push Pin","Drawing pin"],["Marker","Marker pen"],["Binder","Ring binder"],["Sticky Notes","Post-it Note"],["Crayon","Crayon"]],"Hats & Headwear":[["Top Hat","Top hat"],["Cowboy Hat","Cowboy hat"],["Baseball Cap","Baseball cap"],["Beret","Beret"],["Fedora","Fedora"],["Sombrero","Sombrero"],["Crown","Crown (headgear)"],["Turban","Turban"],["Beanie","Knit cap"],["Helmet","Helmet"],["Graduation Cap","Square academic cap"],["Chef's Hat","Toque"],["Bowler Hat","Bowler hat"],["Straw Hat","Straw hat"],["Hard Hat","Hard hat"],["Tiara","Tiara"],["Sun Hat","Sun hat"],["Panama Hat","Panama hat"],["Bicorne","Bicorne"],["Fez","Fez (hat)"],["Headband","Headband"],["Veil","Veil"],["Pith Helmet","Pith helmet"],["Bonnet","Bonnet (headgear)"],["Visor","Visor"]],"Mythical Creatures":[["Dragon","Dragon"],["Unicorn","Unicorn"],["Phoenix","Phoenix (mythology)"],["Mermaid","Mermaid"],["Centaur","Centaur"],["Minotaur","Minotaur"],["Griffin","Griffin"],["Pegasus","Pegasus"],["Medusa","Medusa"],["Cyclops","Cyclops"],["Sphinx","Sphinx"],["Werewolf","Werewolf"],["Vampire","Vampire"],["Kraken","Kraken"],["Hydra","Lernaean Hydra"],["Cerberus","Cerberus"],["Fairy","Fairy"],["Goblin","Goblin"],["Troll","Troll"],["Yeti","Yeti"],["Loch Ness Monster","Loch Ness Monster"],["Chimera","Chimera (mythology)"],["Banshee","Banshee"],["Gargoyle","Gargoyle"],["Genie","Genie"]],"Famous Bridges":[["Golden Gate Bridge","Golden Gate Bridge"],["Tower Bridge","Tower Bridge"],["Brooklyn Bridge","Brooklyn Bridge"],["Sydney Harbour Bridge","Sydney Harbour Bridge"],["Ponte Vecchio","Ponte Vecchio"],["Rialto Bridge","Rialto Bridge"],["Charles Bridge","Charles Bridge"],["Millau Viaduct","Millau Viaduct"],["Akashi Kaikyo Bridge","Akashi Kaikyō Bridge"],["Forth Bridge","Forth Bridge"],["London Bridge","London Bridge"],["Hangzhou Bay Bridge","Hangzhou Bay Bridge"],["Bosphorus Bridge","15 July Martyrs Bridge"],["Helix Bridge","Helix Bridge"],["Si-o-se-pol","Si-o-se-pol"],["Khaju Bridge","Khaju Bridge"],["Pont du Gard","Pont du Gard"],["Gateshead Millennium Bridge","Gateshead Millennium Bridge"],["Chengyang Bridge","Chengyang Bridge"],["Banpo Bridge","Banpo Bridge"],["Oresund Bridge","Øresund Bridge"],["Vasco da Gama Bridge","Vasco da Gama Bridge"],["Stari Most","Stari Most"],["Tsing Ma Bridge","Tsing Ma Bridge"],["Confederation Bridge","Confederation Bridge"]],"Comic Book Superheroes":[["Superman","Superman"],["Batman","Batman"],["Spider-Man","Spider-Man"],["Wonder Woman","Wonder Woman"],["Iron Man","Iron Man"],["Captain America","Captain America"],["The Hulk","Hulk"],["Thor","Thor (Marvel Comics)"],["Black Panther","Black Panther (character)"],["Wolverine","Wolverine (character)"],["Flash","Flash (Barry Allen)"],["Aquaman","Aquaman"],["Green Lantern","Green Lantern"],["Deadpool","Deadpool"],["Doctor Strange","Doctor Strange"],["Captain Marvel","Captain Marvel (Marvel Comics)"],["Black Widow","Black Widow (Natasha Romanova)"],["Hawkeye","Hawkeye (Clint Barton)"],["Daredevil","Daredevil (Marvel Comics character)"],["Green Arrow","Green Arrow"],["Ant-Man","Ant-Man (Scott Lang)"],["Cyclops","Cyclops (Marvel Comics)"],["Storm","Storm (Marvel Comics)"],["Robin","Robin (character)"],["Supergirl","Supergirl"]],"Famous Logos & Brands":[["Nike","Nike, Inc."],["Coca-Cola","Coca-Cola"],["McDonald's","McDonald's"],["Adidas","Adidas"],["Starbucks","Starbucks"],["Pepsi","Pepsi"],["Disney","The Walt Disney Company"],["Gucci","Gucci"],["Louis Vuitton","Louis Vuitton"],["Chanel","Chanel"],["Rolex","Rolex"],["Puma","Puma (brand)"],["KFC","KFC"],["Burger King","Burger King"],["Lego","Lego"],["Ikea","IKEA"],["Shell","Shell plc"],["Visa","Visa Inc."],["Mastercard","Mastercard"],["FedEx","FedEx"],["Red Bull","Red Bull"],["Nestle","Nestlé"],["Lacoste","Lacoste"],["Ferrari","Ferrari"],["Heineken","Heineken"]],"Reptiles & Amphibians":[["Crocodile","Crocodile"],["Alligator","Alligator"],["Cobra","Cobra"],["Python","Pythonidae"],["Iguana","Iguana"],["Chameleon","Chameleon"],["Gecko","Gecko"],["Komodo Dragon","Komodo dragon"],["Tortoise","Tortoise"],["Turtle","Turtle"],["Frog","Frog"],["Toad","Toad"],["Salamander","Salamander"],["Newt","Newt"],["Rattlesnake","Rattlesnake"],["Viper","Viperidae"],["Anaconda","Anaconda"],["Bearded Dragon","Pogona"],["Monitor Lizard","Monitor lizard"],["Boa Constrictor","Boa constrictor"],["Tree Frog","Tree frog"],["Sea Snake","Sea snake"],["Horned Lizard","Horned lizard"],["Axolotl","Axolotl"],["Gila Monster","Gila monster"]],"Drinks & Beverages":[["Coffee","Coffee"],["Tea","Tea"],["Orange Juice","Orange juice"],["Milk","Milk"],["Lemonade","Lemonade"],["Smoothie","Smoothie"],["Hot Chocolate","Hot chocolate"],["Soda","Soft drink"],["Milkshake","Milkshake"],["Iced Tea","Iced tea"],["Espresso","Espresso"],["Cappuccino","Cappuccino"],["Latte","Latte"],["Cola","Cola"],["Mineral Water","Mineral water"],["Coconut Water","Coconut water"],["Energy Drink","Energy drink"],["Matcha","Matcha"],["Mojito","Mojito"],["Margarita","Margarita"],["Sangria","Sangria"],["Champagne","Champagne"],["Apple Juice","Apple juice"],["Ginger Ale","Ginger ale"],["Root Beer","Root beer"]],"Clothing & Fashion":[["T-Shirt","T-shirt"],["Jeans","Jeans"],["Dress","Dress"],["Suit","Suit"],["Sweater","Sweater"],["Jacket","Jacket"],["Skirt","Skirt"],["Shorts","Shorts"],["Coat","Coat (clothing)"],["Hoodie","Hoodie"],["Scarf","Scarf"],["Gloves","Glove"],["Socks","Sock"],["Tie","Necktie"],["Belt","Belt (clothing)"],["Sneakers","Sneakers"],["Boots","Boot"],["High Heels","High-heeled shoe"],["Sandals","Sandal"],["Hat","Hat"],["Sunglasses","Sunglasses"],["Bow Tie","Bow tie"],["Vest","Waistcoat"],["Kimono","Kimono"],["Pajamas","Pajamas"]],"Famous Cats & Big Cats":[["Lion","Lion"],["Tiger","Tiger"],["Leopard","Leopard"],["Cheetah","Cheetah"],["Jaguar","Jaguar"],["Cougar","Cougar"],["Lynx","Lynx"],["Panther","Black panther"],["Snow Leopard","Snow leopard"],["Bobcat","Bobcat"],["Persian Cat","Persian cat"],["Siamese Cat","Siamese cat"],["Maine Coon","Maine Coon"],["Bengal Cat","Bengal cat"],["Sphynx Cat","Sphynx cat"],["Ragdoll","Ragdoll"],["British Shorthair","British Shorthair"],["Scottish Fold","Scottish Fold"],["Tabby Cat","Tabby cat"],["Caracal","Caracal"],["Ocelot","Ocelot"],["Serval","Serval"],["Abyssinian","Abyssinian cat"],["Manx Cat","Manx cat"],["Calico Cat","Calico cat"]],"Famous Islands":[["Hawaii","Hawaii (island)"],["Bali","Bali"],["Santorini","Santorini"],["Maldives","Maldives"],["Iceland","Iceland"],["Sicily","Sicily"],["Madagascar","Madagascar"],["Fiji","Fiji"],["Bora Bora","Bora Bora"],["Capri","Capri"],["Mauritius","Mauritius"],["Seychelles","Seychelles"],["Cyprus","Cyprus"],["Malta","Malta"],["Greenland","Greenland"],["Tahiti","Tahiti"],["Jamaica","Jamaica"],["Cuba","Cuba"],["Crete","Crete"],["Sardinia","Sardinia"],["Phuket","Phuket Province"],["Galapagos","Galápagos Islands"],["Easter Island","Easter Island"],["Ibiza","Ibiza"],["Bahamas","The Bahamas"]],"Body Parts & Anatomy":[["Heart","Heart"],["Brain","Brain"],["Lungs","Lung"],["Eye","Human eye"],["Ear","Ear"],["Hand","Hand"],["Foot","Foot"],["Skeleton","Human skeleton"],["Skull","Skull"],["Spine","Vertebral column"],["Kidney","Kidney"],["Liver","Liver"],["Stomach","Stomach"],["Teeth","Tooth"],["Nose","Human nose"],["Tongue","Tongue"],["Muscle","Muscle"],["Rib Cage","Rib cage"],["DNA","DNA"],["Blood Cells","Blood cell"],["Neuron","Neuron"],["Intestine","Gastrointestinal tract"],["Fingerprint","Fingerprint"],["Veins","Vein"],["Hair","Hair"]],"World Cuisine & Dishes":[["Pizza","Pizza"],["Sushi","Sushi"],["Hamburger","Hamburger"],["Tacos","Taco"],["Pasta","Pasta"],["Curry","Curry"],["Ramen","Ramen"],["Paella","Paella"],["Dumplings","Dumpling"],["Falafel","Falafel"],["Burrito","Burrito"],["Pho","Pho"],["Fish and Chips","Fish and chips"],["Croissant","Croissant"],["Hummus","Hummus"],["Kebab","Kebab"],["Lasagna","Lasagne"],["Pad Thai","Pad thai"],["Risotto","Risotto"],["Fried Rice","Fried rice"],["Spring Roll","Spring roll"],["Nachos","Nachos"],["Pancakes","Pancake"],["Steak","Steak"],["Omelette","Omelette"]],"Tools of Music & Audio":[["Headphones","Headphones"],["Microphone","Microphone"],["Speaker","Loudspeaker"],["Vinyl Record","Phonograph record"],["Turntable","Phonograph"],["Cassette Tape","Cassette tape"],["CD","Compact disc"],["Radio","Radio"],["Amplifier","Guitar amplifier"],["Synthesizer","Synthesizer"],["Metronome","Metronome"],["Tuning Fork","Tuning fork"],["Earbuds","Headphones"],["Boombox","Boombox"],["Megaphone","Megaphone"],["Mixing Console","Mixing console"],["Jukebox","Jukebox"],["Gramophone","Phonograph"],["Drum Machine","Drum machine"],["Equalizer","Equalization (audio)"],["Walkman","Walkman"],["MP3 Player","MP3 player"],["Music Stand","Music stand"],["Sheet Music","Sheet music"],["Conductor's Baton","Baton (conducting)"]]};
+// Game content: categories x answers. Each answer: [displayName, wikipediaTitle]
+const GAME_CONTENT = {"Hollywood Actors":[["Bradley Cooper","Bradley Cooper"],["Leonardo DiCaprio","Leonardo DiCaprio"],["Tom Hanks","Tom Hanks"],["Denzel Washington","Denzel Washington"],["Brad Pitt","Brad Pitt"],["Morgan Freeman","Morgan Freeman"],["Robert De Niro","Robert De Niro"],["Al Pacino","Al Pacino"],["Johnny Depp","Johnny Depp"],["Will Smith","Will Smith"],["Tom Cruise","Tom Cruise"],["Keanu Reeves","Keanu Reeves"],["Samuel L. Jackson","Samuel L. Jackson"],["Matt Damon","Matt Damon"],["Ryan Gosling","Ryan Gosling"],["Hugh Jackman","Hugh Jackman"],["Christian Bale","Christian Bale"],["Joaquin Phoenix","Joaquin Phoenix"],["Jake Gyllenhaal","Jake Gyllenhaal"],["Chris Hemsworth","Chris Hemsworth"],["Robert Downey Jr.","Robert Downey Jr."],["Mark Wahlberg","Mark Wahlberg"],["Jude Law","Jude Law"],["Daniel Craig","Daniel Craig"],["Idris Elba","Idris Elba"]],"Hollywood Actresses":[["Meryl Streep","Meryl Streep"],["Jennifer Lawrence","Jennifer Lawrence"],["Scarlett Johansson","Scarlett Johansson"],["Angelina Jolie","Angelina Jolie"],["Julia Roberts","Julia Roberts"],["Nicole Kidman","Nicole Kidman"],["Cate Blanchett","Cate Blanchett"],["Charlize Theron","Charlize Theron"],["Emma Stone","Emma Stone"],["Natalie Portman","Natalie Portman"],["Anne Hathaway","Anne Hathaway"],["Sandra Bullock","Sandra Bullock"],["Viola Davis","Viola Davis"],["Margot Robbie","Margot Robbie"],["Emma Watson","Emma Watson"],["Jennifer Aniston","Jennifer Aniston"],["Reese Witherspoon","Reese Witherspoon"],["Kate Winslet","Kate Winslet"],["Halle Berry","Halle Berry"],["Zendaya","Zendaya"],["Jessica Chastain","Jessica Chastain"],["Amy Adams","Amy Adams"],["Sandra Oh","Sandra Oh"],["Florence Pugh","Florence Pugh"],["Saoirse Ronan","Saoirse Ronan"]],"World Flags":[["Japan","Flag of Japan"],["Brazil","Flag of Brazil"],["Canada","Flag of Canada"],["France","Flag of France"],["Germany","Flag of Germany"],["Italy","Flag of Italy"],["United Kingdom","Flag of the United Kingdom"],["United States","Flag of the United States"],["India","Flag of India"],["China","Flag of China"],["Mexico","Flag of Mexico"],["Australia","Flag of Australia"],["South Korea","Flag of South Korea"],["Spain","Flag of Spain"],["Argentina","Flag of Argentina"],["Egypt","Flag of Egypt"],["South Africa","Flag of South Africa"],["Saudi Arabia","Flag of Saudi Arabia"],["Turkey","Flag of Turkey"],["Sweden","Flag of Sweden"],["Switzerland","Flag of Switzerland"],["Greece","Flag of Greece"],["Nigeria","Flag of Nigeria"],["Kenya","Flag of Kenya"],["Portugal","Flag of Portugal"]],"Animals":[["Lion","Lion"],["Tiger","Tiger"],["Elephant","Elephant"],["Giraffe","Giraffe"],["Zebra","Zebra"],["Kangaroo","Kangaroo"],["Panda","Giant panda"],["Penguin","Penguin"],["Dolphin","Dolphin"],["Koala","Koala"],["Cheetah","Cheetah"],["Gorilla","Gorilla"],["Hippopotamus","Hippopotamus"],["Rhinoceros","Rhinoceros"],["Crocodile","Crocodile"],["Octopus","Octopus"],["Owl","Owl"],["Flamingo","Flamingo"],["Polar bear","Polar bear"],["Wolf","Wolf"],["Fox","Fox"],["Camel","Camel"],["Peacock","Peafowl"],["Sloth","Sloth"],["Chameleon","Chameleon"]],"Dog Breeds":[["Labrador Retriever","Labrador Retriever"],["German Shepherd","German Shepherd"],["Golden Retriever","Golden Retriever"],["Bulldog","Bulldog"],["Poodle","Poodle"],["Beagle","Beagle"],["Rottweiler","Rottweiler"],["Dachshund","Dachshund"],["Siberian Husky","Siberian Husky"],["Chihuahua","Chihuahua (dog)"],["Boxer","Boxer (dog)"],["Pug","Pug"],["Border Collie","Border Collie"],["Doberman","Dobermann"],["Great Dane","Great Dane"],["Shih Tzu","Shih Tzu"],["Pomeranian","Pomeranian (dog)"],["Corgi","Pembroke Welsh Corgi"],["Saint Bernard","St. Bernard (dog)"],["Dalmatian","Dalmatian (dog)"],["Australian Shepherd","Australian Shepherd"],["Cocker Spaniel","Cocker Spaniel"],["Maltese","Maltese dog"],["Akita","Akita (dog)"],["Bernese Mountain Dog","Bernese Mountain Dog"]],"Fruits":[["Apple","Apple"],["Banana","Banana"],["Orange","Orange (fruit)"],["Strawberry","Strawberry"],["Pineapple","Pineapple"],["Watermelon","Watermelon"],["Grapes","Grape"],["Mango","Mango"],["Kiwifruit","Kiwifruit"],["Pear","Pear"],["Peach","Peach"],["Cherry","Cherry"],["Lemon","Lemon"],["Pomegranate","Pomegranate"],["Avocado","Avocado"],["Coconut","Coconut"],["Papaya","Papaya"],["Fig","Fig"],["Raspberry","Raspberry"],["Blueberry","Blueberry"],["Plum","Plum"],["Apricot","Apricot"],["Dragonfruit","Pitaya"],["Lychee","Lychee"],["Passionfruit","Passiflora edulis"]],"Vegetables":[["Carrot","Carrot"],["Broccoli","Broccoli"],["Tomato","Tomato"],["Potato","Potato"],["Cucumber","Cucumber"],["Onion","Onion"],["Bell Pepper","Bell pepper"],["Eggplant","Eggplant"],["Spinach","Spinach"],["Cabbage","Cabbage"],["Cauliflower","Cauliflower"],["Corn","Maize"],["Pumpkin","Pumpkin"],["Lettuce","Lettuce"],["Garlic","Garlic"],["Beetroot","Beetroot"],["Celery","Celery"],["Mushroom","Edible mushroom"],["Radish","Radish"],["Asparagus","Asparagus"],["Zucchini","Zucchini"],["Sweet Potato","Sweet potato"],["Peas","Pea"],["Ginger","Ginger"],["Okra","Okra"]],"US Presidents":[["George Washington","George Washington"],["Abraham Lincoln","Abraham Lincoln"],["Thomas Jefferson","Thomas Jefferson"],["Theodore Roosevelt","Theodore Roosevelt"],["Franklin D. Roosevelt","Franklin D. Roosevelt"],["John F. Kennedy","John F. Kennedy"],["Ronald Reagan","Ronald Reagan"],["Barack Obama","Barack Obama"],["Bill Clinton","Bill Clinton"],["George W. Bush","George W. Bush"],["Richard Nixon","Richard Nixon"],["Dwight D. Eisenhower","Dwight D. Eisenhower"],["Harry S. Truman","Harry S. Truman"],["Jimmy Carter","Jimmy Carter"],["Gerald Ford","Gerald Ford"],["Lyndon B. Johnson","Lyndon B. Johnson"],["Ulysses S. Grant","Ulysses S. Grant"],["Andrew Jackson","Andrew Jackson"],["James Madison","James Madison"],["John Adams","John Adams"],["Woodrow Wilson","Woodrow Wilson"],["Herbert Hoover","Herbert Hoover"],["Calvin Coolidge","Calvin Coolidge"],["William Taft","William Howard Taft"],["Joe Biden","Joe Biden"]],"World Landmarks":[["Eiffel Tower","Eiffel Tower"],["Statue of Liberty","Statue of Liberty"],["Great Wall of China","Great Wall of China"],["Taj Mahal","Taj Mahal"],["Colosseum","Colosseum"],["Big Ben","Big Ben"],["Sydney Opera House","Sydney Opera House"],["Christ the Redeemer","Christ the Redeemer (statue)"],["Pyramids of Giza","Giza pyramid complex"],["Leaning Tower of Pisa","Leaning Tower of Pisa"],["Golden Gate Bridge","Golden Gate Bridge"],["Mount Rushmore","Mount Rushmore"],["Machu Picchu","Machu Picchu"],["Burj Khalifa","Burj Khalifa"],["Petra","Petra"],["Stonehenge","Stonehenge"],["Brandenburg Gate","Brandenburg Gate"],["Sagrada Familia","Sagrada Família"],["Acropolis","Acropolis of Athens"],["Tower Bridge","Tower Bridge"],["Empire State Building","Empire State Building"],["Sphinx","Great Sphinx of Giza"],["Angkor Wat","Angkor Wat"],["Neuschwanstein Castle","Neuschwanstein Castle"],["Chichen Itza","Chichen Itza"]],"Musicians & Singers":[["Michael Jackson","Michael Jackson"],["Beyonce","Beyoncé"],["Elvis Presley","Elvis Presley"],["Madonna","Madonna"],["Freddie Mercury","Freddie Mercury"],["Taylor Swift","Taylor Swift"],["Bob Marley","Bob Marley"],["Adele","Adele"],["Elton John","Elton John"],["Rihanna","Rihanna"],["Bruno Mars","Bruno Mars"],["Lady Gaga","Lady Gaga"],["Ed Sheeran","Ed Sheeran"],["Drake","Drake (musician)"],["Stevie Wonder","Stevie Wonder"],["Whitney Houston","Whitney Houston"],["David Bowie","David Bowie"],["Prince","Prince (musician)"],["Justin Bieber","Justin Bieber"],["Ariana Grande","Ariana Grande"],["Billie Eilish","Billie Eilish"],["Bob Dylan","Bob Dylan"],["Frank Sinatra","Frank Sinatra"],["Eminem","Eminem"],["The Weeknd","The Weeknd"]],"Sports Stars":[["Lionel Messi","Lionel Messi"],["Cristiano Ronaldo","Cristiano Ronaldo"],["LeBron James","LeBron James"],["Michael Jordan","Michael Jordan"],["Serena Williams","Serena Williams"],["Roger Federer","Roger Federer"],["Usain Bolt","Usain Bolt"],["Tom Brady","Tom Brady"],["Tiger Woods","Tiger Woods"],["Muhammad Ali","Muhammad Ali"],["Rafael Nadal","Rafael Nadal"],["Kobe Bryant","Kobe Bryant"],["Neymar","Neymar"],["Stephen Curry","Stephen Curry"],["Lewis Hamilton","Lewis Hamilton"],["Floyd Mayweather","Floyd Mayweather Jr."],["Novak Djokovic","Novak Djokovic"],["Kylian Mbappe","Kylian Mbappé"],["Shaquille O'Neal","Shaquille O'Neal"],["David Beckham","David Beckham"],["Conor McGregor","Conor McGregor"],["Simone Biles","Simone Biles"],["Naomi Osaka","Naomi Osaka"],["Mike Tyson","Mike Tyson"],["Pele","Pelé"]],"Car Logos":[["Ferrari","Ferrari"],["Lamborghini","Lamborghini"],["Toyota","Toyota"],["BMW","BMW"],["Mercedes-Benz","Mercedes-Benz"],["Audi","Audi"],["Ford","Ford Motor Company"],["Honda","Honda"],["Volkswagen","Volkswagen"],["Porsche","Porsche"],["Tesla","Tesla, Inc."],["Chevrolet","Chevrolet"],["Nissan","Nissan"],["Jaguar","Jaguar Cars"],["Bentley","Bentley"],["Rolls-Royce","Rolls-Royce Motor Cars"],["Maserati","Maserati"],["Bugatti","Bugatti"],["Aston Martin","Aston Martin"],["Hyundai","Hyundai Motor Company"],["Kia","Kia"],["Mazda","Mazda"],["Subaru","Subaru"],["Volvo","Volvo Cars"],["Jeep","Jeep"]],"Birds":[["Eagle","Eagle"],["Owl","Owl"],["Flamingo","Flamingo"],["Peacock","Peafowl"],["Penguin","Penguin"],["Parrot","Parrot"],["Swan","Swan"],["Pelican","Pelican"],["Toucan","Toucan"],["Ostrich","Common ostrich"],["Hummingbird","Hummingbird"],["Robin","European robin"],["Woodpecker","Woodpecker"],["Pigeon","Columbidae"],["Crow","Crow"],["Seagull","Gull"],["Kingfisher","Kingfisher"],["Falcon","Falcon"],["Vulture","Vulture"],["Stork","Stork"],["Cardinal","Northern cardinal"],["Crane","Crane (bird)"],["Heron","Heron"],["Duck","Duck"],["Sparrow","Sparrow"]],"Famous Paintings":[["Mona Lisa","Mona Lisa"],["The Starry Night","The Starry Night"],["The Scream","The Scream"],["Girl with a Pearl Earring","Girl with a Pearl Earring"],["The Last Supper","The Last Supper (Leonardo)"],["The Persistence of Memory","The Persistence of Memory"],["Guernica","Guernica (Picasso)"],["American Gothic","American Gothic"],["The Birth of Venus","The Birth of Venus"],["The Kiss","The Kiss (Klimt)"],["Water Lilies","Water Lilies"],["The Night Watch","The Night Watch"],["Sunflowers","Sunflowers (Van Gogh series)"],["The Creation of Adam","The Creation of Adam"],["Las Meninas","Las Meninas"],["Whistler's Mother","Whistler's Mother"],["The Great Wave off Kanagawa","The Great Wave off Kanagawa"],["Cafe Terrace at Night","Café Terrace at Night"],["The School of Athens","The School of Athens"],["Liberty Leading the People","Liberty Leading the People"],["Nighthawks","Nighthawks"],["The Garden of Earthly Delights","The Garden of Earthly Delights"],["Bal du moulin de la Galette","Bal du moulin de la Galette"],["Composition with Red Blue and Yellow","Composition with Red, Blue and Yellow"],["The Son of Man","The Son of Man"]],"Tech Company Logos":[["Apple","Apple Inc."],["Google","Google"],["Microsoft","Microsoft"],["Amazon","Amazon (company)"],["Meta","Meta Platforms"],["Netflix","Netflix"],["Spotify","Spotify"],["Adobe","Adobe Inc."],["Intel","Intel"],["IBM","IBM"],["Oracle","Oracle Corporation"],["Samsung","Samsung"],["Sony","Sony"],["Nvidia","Nvidia"],["Twitter","Twitter"],["Uber","Uber"],["Airbnb","Airbnb"],["PayPal","PayPal"],["Dropbox","Dropbox"],["Slack","Slack Technologies"],["Zoom","Zoom Video Communications"],["LinkedIn","LinkedIn"],["Pinterest","Pinterest"],["Snapchat","Snap Inc."],["TikTok","TikTok"]],"Planets & Space":[["Earth","Earth"],["Mars","Mars"],["Jupiter","Jupiter"],["Saturn","Saturn"],["Mercury","Mercury (planet)"],["Venus","Venus"],["Neptune","Neptune"],["Uranus","Uranus"],["The Moon","Moon"],["The Sun","Sun"],["Pluto","Pluto"],["Milky Way","Milky Way"],["Halley's Comet","Halley's Comet"],["International Space Station","International Space Station"],["Hubble Telescope","Hubble Space Telescope"],["Apollo 11","Apollo 11"],["Space Shuttle","Space Shuttle"],["Saturn's Rings","Rings of Saturn"],["Andromeda Galaxy","Andromeda Galaxy"],["Solar Eclipse","Solar eclipse"],["Asteroid Belt","Asteroid belt"],["Black Hole","Black hole"],["Mars Rover","Mars rover"],["Voyager","Voyager 1"],["Orion Nebula","Orion Nebula"]],"Musical Instruments":[["Guitar","Guitar"],["Piano","Piano"],["Violin","Violin"],["Drums","Drum kit"],["Saxophone","Saxophone"],["Trumpet","Trumpet"],["Flute","Western concert flute"],["Cello","Cello"],["Harp","Harp"],["Accordion","Accordion"],["Clarinet","Clarinet"],["Trombone","Trombone"],["Banjo","Banjo"],["Ukulele","Ukulele"],["Double Bass","Double bass"],["Tuba","Tuba"],["Harmonica","Harmonica"],["Bagpipes","Bagpipes"],["Xylophone","Xylophone"],["Mandolin","Mandolin"],["Tambourine","Tambourine"],["Organ","Organ (music)"],["French Horn","French horn"],["Bongo Drums","Bongo drum"],["Sitar","Sitar"]],"Capital Cities":[["Paris","Paris"],["London","London"],["Tokyo","Tokyo"],["Rome","Rome"],["Cairo","Cairo"],["Moscow","Moscow"],["Washington D.C.","Washington, D.C."],["Beijing","Beijing"],["Berlin","Berlin"],["Madrid","Madrid"],["Athens","Athens"],["Amsterdam","Amsterdam"],["Vienna","Vienna"],["Dubai","Dubai"],["Bangkok","Bangkok"],["Istanbul","Istanbul"],["Sydney","Sydney"],["Rio de Janeiro","Rio de Janeiro"],["New Delhi","New Delhi"],["Singapore","Singapore"],["Seoul","Seoul"],["Mexico City","Mexico City"],["Toronto","Toronto"],["Barcelona","Barcelona"],["Venice","Venice"]],"Cartoon Characters":[["Mickey Mouse","Mickey Mouse"],["Bugs Bunny","Bugs Bunny"],["SpongeBob SquarePants","SpongeBob SquarePants"],["Homer Simpson","Homer Simpson"],["Pikachu","Pikachu"],["Scooby-Doo","Scooby-Doo"],["Tom and Jerry","Tom and Jerry"],["Donald Duck","Donald Duck"],["Garfield","Garfield"],["Snoopy","Snoopy"],["Popeye","Popeye"],["Bart Simpson","Bart Simpson"],["Daffy Duck","Daffy Duck"],["Goofy","Goofy"],["Woody Woodpecker","Woody Woodpecker"],["Felix the Cat","Felix the Cat"],["Betty Boop","Betty Boop"],["Road Runner","Wile E. Coyote and the Road Runner"],["Tweety","Tweety"],["Porky Pig","Porky Pig"],["Yogi Bear","Yogi Bear"],["Fred Flintstone","Fred Flintstone"],["Winnie the Pooh","Winnie-the-Pooh"],["Spider-Man","Spider-Man"],["Batman","Batman"]],"Insects & Bugs":[["Butterfly","Butterfly"],["Bee","Bee"],["Ant","Ant"],["Ladybug","Coccinellidae"],["Dragonfly","Dragonfly"],["Grasshopper","Grasshopper"],["Beetle","Beetle"],["Mosquito","Mosquito"],["Spider","Spider"],["Caterpillar","Caterpillar"],["Cricket","Cricket (insect)"],["Wasp","Wasp"],["Moth","Moth"],["Cockroach","Cockroach"],["Praying Mantis","Mantis"],["Firefly","Firefly"],["Scorpion","Scorpion"],["Centipede","Centipede"],["Snail","Snail"],["Termite","Termite"],["Tarantula","Tarantula"],["Stick Insect","Phasmatodea"],["Housefly","Housefly"],["Flea","Flea"],["Earthworm","Earthworm"]],"Currencies & Banknotes":[["US Dollar","United States dollar"],["Euro","Euro"],["British Pound","Pound sterling"],["Japanese Yen","Japanese yen"],["Swiss Franc","Swiss franc"],["Canadian Dollar","Canadian dollar"],["Australian Dollar","Australian dollar"],["Indian Rupee","Indian rupee"],["Chinese Yuan","Renminbi"],["Saudi Riyal","Saudi riyal"],["Russian Ruble","Russian ruble"],["Brazilian Real","Brazilian real"],["Mexican Peso","Mexican peso"],["South Korean Won","South Korean won"],["Turkish Lira","Turkish lira"],["South African Rand","South African rand"],["Egyptian Pound","Egyptian pound"],["Norwegian Krone","Norwegian krone"],["Swedish Krona","Swedish krona"],["Thai Baht","Thai baht"],["UAE Dirham","United Arab Emirates dirham"],["Singapore Dollar","Singapore dollar"],["Hong Kong Dollar","Hong Kong dollar"],["Polish Zloty","Polish złoty"],["Israeli Shekel","Israeli new shekel"]],"Trees & Plants":[["Oak","Oak"],["Pine","Pine"],["Palm Tree","Arecaceae"],["Maple","Maple"],["Bamboo","Bamboo"],["Cactus","Cactus"],["Willow","Willow"],["Birch","Birch"],["Redwood","Sequoia (genus)"],["Cherry Blossom","Cherry blossom"],["Baobab","Adansonia"],["Bonsai","Bonsai"],["Fern","Fern"],["Eucalyptus","Eucalyptus"],["Sunflower","Common sunflower"],["Rose","Rose"],["Tulip","Tulip"],["Orchid","Orchidaceae"],["Lavender","Lavandula"],["Lotus","Nelumbo nucifera"],["Venus Flytrap","Venus flytrap"],["Olive Tree","Olive"],["Sequoia","Sequoiadendron"],["Daffodil","Narcissus (plant)"],["Ivy","Hedera"]],"Famous Scientists":[["Albert Einstein","Albert Einstein"],["Isaac Newton","Isaac Newton"],["Charles Darwin","Charles Darwin"],["Marie Curie","Marie Curie"],["Nikola Tesla","Nikola Tesla"],["Galileo Galilei","Galileo Galilei"],["Stephen Hawking","Stephen Hawking"],["Thomas Edison","Thomas Edison"],["Nicolaus Copernicus","Nicolaus Copernicus"],["Louis Pasteur","Louis Pasteur"],["Alexander Graham Bell","Alexander Graham Bell"],["Michael Faraday","Michael Faraday"],["Gregor Mendel","Gregor Mendel"],["Niels Bohr","Niels Bohr"],["Max Planck","Max Planck"],["Carl Sagan","Carl Sagan"],["Alan Turing","Alan Turing"],["James Watson","James Watson"],["Rosalind Franklin","Rosalind Franklin"],["Richard Feynman","Richard Feynman"],["Erwin Schrodinger","Erwin Schrödinger"],["Robert Oppenheimer","J. Robert Oppenheimer"],["Ada Lovelace","Ada Lovelace"],["Werner Heisenberg","Werner Heisenberg"],["Jane Goodall","Jane Goodall"]],"Sea Creatures":[["Shark","Shark"],["Whale","Whale"],["Dolphin","Dolphin"],["Octopus","Octopus"],["Jellyfish","Jellyfish"],["Starfish","Starfish"],["Seahorse","Seahorse"],["Crab","Crab"],["Lobster","Lobster"],["Sea Turtle","Sea turtle"],["Stingray","Batoidea"],["Clownfish","Clownfish"],["Pufferfish","Tetraodontidae"],["Squid","Squid"],["Manatee","Manatee"],["Walrus","Walrus"],["Sea Otter","Sea otter"],["Eel","Eel"],["Swordfish","Swordfish"],["Orca","Orca"],["Seal","Pinniped"],["Coral","Coral"],["Anglerfish","Anglerfish"],["Hammerhead Shark","Hammerhead shark"],["Blue Whale","Blue whale"]],"Board & Video Games":[["Chess","Chess"],["Monopoly","Monopoly (game)"],["Scrabble","Scrabble"],["Tetris","Tetris"],["Pac-Man","Pac-Man"],["Minecraft","Minecraft"],["Super Mario","Super Mario"],["Checkers","Draughts"],["Poker","Poker"],["Sudoku","Sudoku"],["Rubik's Cube","Rubik's Cube"],["Jenga","Jenga"],["Risk","Risk (game)"],["Clue","Cluedo"],["Connect Four","Connect Four"],["Backgammon","Backgammon"],["Domino","Dominoes"],["Solitaire","Solitaire"],["Space Invaders","Space Invaders"],["Pong","Pong"],["Battleship","Battleship (game)"],["Uno","Uno (card game)"],["Mahjong","Mahjong"],["Dominoes","Dominoes"],["Go","Go (game)"]],"Tools & Hardware":[["Hammer","Hammer"],["Screwdriver","Screwdriver"],["Wrench","Wrench"],["Saw","Saw"],["Drill","Drill"],["Pliers","Pliers"],["Tape Measure","Tape measure"],["Level","Spirit level"],["Chisel","Chisel"],["Axe","Axe"],["Shovel","Shovel"],["Ladder","Ladder"],["Paintbrush","Paintbrush"],["Nail","Nail (fastener)"],["Screw","Screw"],["Bolt","Bolt (fastener)"],["Hand Plane","Plane (tool)"],["File","File (tool)"],["Clamp","Clamp (tool)"],["Crowbar","Crowbar (tool)"],["Sandpaper","Sandpaper"],["Pickaxe","Pickaxe"],["Sledgehammer","Sledgehammer"],["Mallet","Mallet"],["Vise","Vise"]],"Famous Buildings & Architecture":[["White House","White House"],["Buckingham Palace","Buckingham Palace"],["The Pentagon","The Pentagon"],["Sydney Harbour Bridge","Sydney Harbour Bridge"],["Petronas Towers","Petronas Towers"],["Chrysler Building","Chrysler Building"],["Flatiron Building","Flatiron Building"],["Notre-Dame","Notre-Dame de Paris"],["Hagia Sophia","Hagia Sophia"],["St. Peter's Basilica","St. Peter's Basilica"],["The Louvre","Louvre"],["Guggenheim Museum","Guggenheim Museum Bilbao"],["One World Trade Center","One World Trade Center"],["Shard","The Shard"],["Marina Bay Sands","Marina Bay Sands"],["Forbidden City","Forbidden City"],["Westminster Abbey","Westminster Abbey"],["Kremlin","Moscow Kremlin"],["Saint Basil's Cathedral","Saint Basil's Cathedral"],["Willis Tower","Willis Tower"],["CN Tower","CN Tower"],["Space Needle","Space Needle"],["Gateway Arch","Gateway Arch"],["Lincoln Memorial","Lincoln Memorial"],["Pantheon","Pantheon, Rome"]],"Desserts & Sweets":[["Chocolate Cake","Chocolate cake"],["Ice Cream","Ice cream"],["Donut","Doughnut"],["Cupcake","Cupcake"],["Cheesecake","Cheesecake"],["Macaron","Macaron"],["Tiramisu","Tiramisu"],["Brownie","Chocolate brownie"],["Pancakes","Pancake"],["Waffle","Waffle"],["Croissant","Croissant"],["Cookie","Cookie"],["Pie","Pie"],["Pudding","Pudding"],["Gelato","Gelato"],["Cotton Candy","Cotton candy"],["Churros","Churro"],["Eclair","Éclair"],["Muffin","Muffin"],["Pretzel","Pretzel"],["Baklava","Baklava"],["Creme Brulee","Crème brûlée"],["Jelly","Gelatin dessert"],["Marshmallow","Marshmallow"],["Fudge","Fudge"]],"Kitchen Items":[["Knife","Kitchen knife"],["Fork","Fork"],["Spoon","Spoon"],["Plate","Plate (dishware)"],["Cup","Cup"],["Bowl","Bowl"],["Pot","Cookware and bakeware"],["Frying Pan","Frying pan"],["Kettle","Kettle"],["Toaster","Toaster"],["Blender","Blender"],["Microwave","Microwave oven"],["Refrigerator","Refrigerator"],["Oven","Oven"],["Whisk","Whisk"],["Spatula","Spatula"],["Rolling Pin","Rolling pin"],["Grater","Grater"],["Colander","Colander"],["Cutting Board","Cutting board"],["Ladle","Ladle (spoon)"],["Teapot","Teapot"],["Corkscrew","Corkscrew"],["Mug","Mug"],["Chopsticks","Chopsticks"]],"Famous Mountains & Rivers":[["Mount Everest","Mount Everest"],["Mount Fuji","Mount Fuji"],["Kilimanjaro","Mount Kilimanjaro"],["Matterhorn","Matterhorn"],["Mount Rainier","Mount Rainier"],["Denali","Denali"],["K2","K2"],["Mont Blanc","Mont Blanc"],["Amazon River","Amazon River"],["Nile River","Nile"],["Mississippi River","Mississippi River"],["Yangtze River","Yangtze"],["Niagara Falls","Niagara Falls"],["Victoria Falls","Victoria Falls"],["Grand Canyon","Grand Canyon"],["Mount Vesuvius","Mount Vesuvius"],["Table Mountain","Table Mountain"],["Mount Etna","Mount Etna"],["Half Dome","Half Dome"],["Mount Sinai","Mount Sinai"],["Angel Falls","Angel Falls"],["Danube","Danube"],["Ganges","Ganges"],["Colorado River","Colorado River"],["Iguazu Falls","Iguazu Falls"]],"World Leaders & Politicians":[["Winston Churchill","Winston Churchill"],["Mahatma Gandhi","Mahatma Gandhi"],["Nelson Mandela","Nelson Mandela"],["Queen Elizabeth II","Elizabeth II"],["Abraham Lincoln","Abraham Lincoln"],["Martin Luther King Jr.","Martin Luther King Jr."],["Margaret Thatcher","Margaret Thatcher"],["Vladimir Putin","Vladimir Putin"],["Angela Merkel","Angela Merkel"],["Napoleon Bonaparte","Napoleon"],["Julius Caesar","Julius Caesar"],["Cleopatra","Cleopatra"],["Che Guevara","Che Guevara"],["Pope Francis","Pope Francis"],["Dalai Lama","14th Dalai Lama"],["Emmanuel Macron","Emmanuel Macron"],["Justin Trudeau","Justin Trudeau"],["King Charles III","Charles III"],["Theodore Roosevelt","Theodore Roosevelt"],["Charles de Gaulle","Charles de Gaulle"],["Mikhail Gorbachev","Mikhail Gorbachev"],["Indira Gandhi","Indira Gandhi"],["Kemal Ataturk","Mustafa Kemal Atatürk"],["Eva Peron","Eva Perón"],["Benjamin Franklin","Benjamin Franklin"]],"Famous Authors & Writers":[["William Shakespeare","William Shakespeare"],["Mark Twain","Mark Twain"],["Charles Dickens","Charles Dickens"],["Jane Austen","Jane Austen"],["Ernest Hemingway","Ernest Hemingway"],["J.K. Rowling","J. K. Rowling"],["George Orwell","George Orwell"],["Leo Tolstoy","Leo Tolstoy"],["Edgar Allan Poe","Edgar Allan Poe"],["Agatha Christie","Agatha Christie"],["F. Scott Fitzgerald","F. Scott Fitzgerald"],["Stephen King","Stephen King"],["J.R.R. Tolkien","J. R. R. Tolkien"],["Maya Angelou","Maya Angelou"],["Oscar Wilde","Oscar Wilde"],["Virginia Woolf","Virginia Woolf"],["Fyodor Dostoevsky","Fyodor Dostoevsky"],["Gabriel Garcia Marquez","Gabriel García Márquez"],["Franz Kafka","Franz Kafka"],["Emily Dickinson","Emily Dickinson"],["Toni Morrison","Toni Morrison"],["Roald Dahl","Roald Dahl"],["Herman Melville","Herman Melville"],["Victor Hugo","Victor Hugo"],["Dr. Seuss","Dr. Seuss"]],"Sports Equipment":[["Basketball","Basketball (ball)"],["Soccer Ball","Ball (association football)"],["Tennis Racket","Racket (sports equipment)"],["Baseball Bat","Baseball bat"],["Golf Club","Golf club"],["Hockey Stick","Hockey stick"],["Boxing Gloves","Boxing glove"],["Skateboard","Skateboard"],["Surfboard","Surfboard"],["Skis","Ski"],["Football Helmet","Football helmet"],["Dumbbell","Dumbbell"],["Bowling Pin","Bowling pin"],["Dartboard","Darts"],["Ping Pong Paddle","Table tennis racket"],["Cricket Bat","Cricket bat"],["Volleyball","Volleyball (ball)"],["Frisbee","Frisbee"],["Snowboard","Snowboard"],["Roller Skates","Roller skates"],["Catcher's Mitt","Baseball glove"],["Badminton Racket","Badminton"],["Whistle","Whistle"],["Stopwatch","Stopwatch"],["Trophy","Trophy"]],"Gemstones & Minerals":[["Diamond","Diamond"],["Ruby","Ruby"],["Emerald","Emerald"],["Sapphire","Sapphire"],["Amethyst","Amethyst"],["Topaz","Topaz"],["Opal","Opal"],["Pearl","Pearl"],["Jade","Jade"],["Turquoise","Turquoise"],["Garnet","Garnet"],["Aquamarine","Aquamarine (gem)"],["Quartz","Quartz"],["Amber","Amber"],["Onyx","Onyx"],["Gold","Gold"],["Silver","Silver"],["Platinum","Platinum"],["Copper","Copper"],["Obsidian","Obsidian"],["Coral","Coral"],["Citrine","Citrine"],["Tanzanite","Tanzanite"],["Malachite","Malachite"],["Lapis Lazuli","Lapis lazuli"]],"Weather & Natural Phenomena":[["Rainbow","Rainbow"],["Tornado","Tornado"],["Lightning","Lightning"],["Hurricane","Tropical cyclone"],["Snowflake","Snowflake"],["Aurora Borealis","Aurora"],["Volcano","Volcano"],["Tsunami","Tsunami"],["Sandstorm","Dust storm"],["Fog","Fog"],["Hailstone","Hail"],["Waterfall","Waterfall"],["Geyser","Geyser"],["Avalanche","Avalanche"],["Solar Eclipse","Solar eclipse"],["Cloud","Cloud"],["Iceberg","Iceberg"],["Glacier","Glacier"],["Whirlpool","Whirlpool"],["Sunset","Sunset"],["Earthquake","Earthquake"],["Flood","Flood"],["Drought","Drought"],["Monsoon","Monsoon"],["Frost","Frost"]],"Modes of Transport":[["Airplane","Airplane"],["Helicopter","Helicopter"],["Train","Train"],["Bicycle","Bicycle"],["Motorcycle","Motorcycle"],["Bus","Bus"],["Ship","Ship"],["Submarine","Submarine"],["Hot Air Balloon","Hot air balloon"],["Sailboat","Sailboat"],["Tractor","Tractor"],["Ambulance","Ambulance"],["Fire Truck","Fire engine"],["Taxi","Taxicab"],["Subway","Rapid transit"],["Tram","Tram"],["Gondola","Gondola"],["Canoe","Canoe"],["Scooter","Scooter (motorcycle)"],["Cruise Ship","Cruise ship"],["Cable Car","Cable car"],["Rickshaw","Rickshaw"],["Jet Ski","Personal water craft"],["Segway","Segway"],["Monorail","Monorail"]],"Office & School Supplies":[["Pencil","Pencil"],["Pen","Pen"],["Eraser","Eraser"],["Stapler","Stapler"],["Scissors","Scissors"],["Ruler","Ruler"],["Notebook","Notebook"],["Calculator","Calculator"],["Paperclip","Paper clip"],["Highlighter","Highlighter"],["Glue Stick","Glue stick"],["Tape Dispenser","Adhesive tape"],["Whiteboard","Whiteboard"],["Backpack","Backpack"],["Compass","Compass (drawing tool)"],["Protractor","Protractor"],["Hole Punch","Hole punch"],["Pencil Sharpener","Pencil sharpener"],["Globe","Globe"],["Chalk","Chalk"],["Push Pin","Drawing pin"],["Marker","Marker pen"],["Binder","Ring binder"],["Sticky Notes","Post-it Note"],["Crayon","Crayon"]],"Hats & Headwear":[["Top Hat","Top hat"],["Cowboy Hat","Cowboy hat"],["Baseball Cap","Baseball cap"],["Beret","Beret"],["Fedora","Fedora"],["Sombrero","Sombrero"],["Crown","Crown (headgear)"],["Turban","Turban"],["Beanie","Knit cap"],["Helmet","Helmet"],["Graduation Cap","Square academic cap"],["Chef's Hat","Toque"],["Bowler Hat","Bowler hat"],["Straw Hat","Straw hat"],["Hard Hat","Hard hat"],["Tiara","Tiara"],["Sun Hat","Sun hat"],["Panama Hat","Panama hat"],["Bicorne","Bicorne"],["Fez","Fez (hat)"],["Headband","Headband"],["Veil","Veil"],["Pith Helmet","Pith helmet"],["Bonnet","Bonnet (headgear)"],["Visor","Visor"]],"Mythical Creatures":[["Dragon","Dragon"],["Unicorn","Unicorn"],["Phoenix","Phoenix (mythology)"],["Mermaid","Mermaid"],["Centaur","Centaur"],["Minotaur","Minotaur"],["Griffin","Griffin"],["Pegasus","Pegasus"],["Medusa","Medusa"],["Cyclops","Cyclops"],["Sphinx","Sphinx"],["Werewolf","Werewolf"],["Vampire","Vampire"],["Kraken","Kraken"],["Hydra","Lernaean Hydra"],["Cerberus","Cerberus"],["Fairy","Fairy"],["Goblin","Goblin"],["Troll","Troll"],["Yeti","Yeti"],["Loch Ness Monster","Loch Ness Monster"],["Chimera","Chimera (mythology)"],["Banshee","Banshee"],["Gargoyle","Gargoyle"],["Genie","Genie"]],"Famous Bridges":[["Golden Gate Bridge","Golden Gate Bridge"],["Tower Bridge","Tower Bridge"],["Brooklyn Bridge","Brooklyn Bridge"],["Sydney Harbour Bridge","Sydney Harbour Bridge"],["Ponte Vecchio","Ponte Vecchio"],["Rialto Bridge","Rialto Bridge"],["Charles Bridge","Charles Bridge"],["Millau Viaduct","Millau Viaduct"],["Akashi Kaikyo Bridge","Akashi Kaikyō Bridge"],["Forth Bridge","Forth Bridge"],["London Bridge","London Bridge"],["Hangzhou Bay Bridge","Hangzhou Bay Bridge"],["Bosphorus Bridge","15 July Martyrs Bridge"],["Helix Bridge","Helix Bridge"],["Si-o-se-pol","Si-o-se-pol"],["Khaju Bridge","Khaju Bridge"],["Pont du Gard","Pont du Gard"],["Gateshead Millennium Bridge","Gateshead Millennium Bridge"],["Chengyang Bridge","Chengyang Bridge"],["Banpo Bridge","Banpo Bridge"],["Oresund Bridge","Øresund Bridge"],["Vasco da Gama Bridge","Vasco da Gama Bridge"],["Stari Most","Stari Most"],["Tsing Ma Bridge","Tsing Ma Bridge"],["Confederation Bridge","Confederation Bridge"]],"Comic Book Superheroes":[["Superman","Superman"],["Batman","Batman"],["Spider-Man","Spider-Man"],["Wonder Woman","Wonder Woman"],["Iron Man","Iron Man"],["Captain America","Captain America"],["The Hulk","Hulk"],["Thor","Thor (Marvel Comics)"],["Black Panther","Black Panther (character)"],["Wolverine","Wolverine (character)"],["Flash","Flash (Barry Allen)"],["Aquaman","Aquaman"],["Green Lantern","Green Lantern"],["Deadpool","Deadpool"],["Doctor Strange","Doctor Strange"],["Captain Marvel","Captain Marvel (Marvel Comics)"],["Black Widow","Black Widow (Natasha Romanova)"],["Hawkeye","Hawkeye (Clint Barton)"],["Daredevil","Daredevil (Marvel Comics character)"],["Green Arrow","Green Arrow"],["Ant-Man","Ant-Man (Scott Lang)"],["Cyclops","Cyclops (Marvel Comics)"],["Storm","Storm (Marvel Comics)"],["Robin","Robin (character)"],["Supergirl","Supergirl"]],"Famous Logos & Brands":[["Nike","Nike, Inc."],["Coca-Cola","Coca-Cola"],["McDonald's","McDonald's"],["Adidas","Adidas"],["Starbucks","Starbucks"],["Pepsi","Pepsi"],["Disney","The Walt Disney Company"],["Gucci","Gucci"],["Louis Vuitton","Louis Vuitton"],["Chanel","Chanel"],["Rolex","Rolex"],["Puma","Puma (brand)"],["KFC","KFC"],["Burger King","Burger King"],["Lego","Lego"],["Ikea","IKEA"],["Shell","Shell plc"],["Visa","Visa Inc."],["Mastercard","Mastercard"],["FedEx","FedEx"],["Red Bull","Red Bull"],["Nestle","Nestlé"],["Lacoste","Lacoste"],["Ferrari","Ferrari"],["Heineken","Heineken"]],"Reptiles & Amphibians":[["Crocodile","Crocodile"],["Alligator","Alligator"],["Cobra","Cobra"],["Python","Pythonidae"],["Iguana","Iguana"],["Chameleon","Chameleon"],["Gecko","Gecko"],["Komodo Dragon","Komodo dragon"],["Tortoise","Tortoise"],["Turtle","Turtle"],["Frog","Frog"],["Toad","Toad"],["Salamander","Salamander"],["Newt","Newt"],["Rattlesnake","Rattlesnake"],["Viper","Viperidae"],["Anaconda","Anaconda"],["Bearded Dragon","Pogona"],["Monitor Lizard","Monitor lizard"],["Boa Constrictor","Boa constrictor"],["Tree Frog","Tree frog"],["Sea Snake","Sea snake"],["Horned Lizard","Horned lizard"],["Axolotl","Axolotl"],["Gila Monster","Gila monster"]],"Drinks & Beverages":[["Coffee","Coffee"],["Tea","Tea"],["Orange Juice","Orange juice"],["Milk","Milk"],["Lemonade","Lemonade"],["Smoothie","Smoothie"],["Hot Chocolate","Hot chocolate"],["Soda","Soft drink"],["Milkshake","Milkshake"],["Iced Tea","Iced tea"],["Espresso","Espresso"],["Cappuccino","Cappuccino"],["Latte","Latte"],["Cola","Cola"],["Mineral Water","Mineral water"],["Coconut Water","Coconut water"],["Energy Drink","Energy drink"],["Matcha","Matcha"],["Mojito","Mojito"],["Margarita","Margarita"],["Sangria","Sangria"],["Champagne","Champagne"],["Apple Juice","Apple juice"],["Ginger Ale","Ginger ale"],["Root Beer","Root beer"]],"Clothing & Fashion":[["T-Shirt","T-shirt"],["Jeans","Jeans"],["Dress","Dress"],["Suit","Suit"],["Sweater","Sweater"],["Jacket","Jacket"],["Skirt","Skirt"],["Shorts","Shorts"],["Coat","Coat (clothing)"],["Hoodie","Hoodie"],["Scarf","Scarf"],["Gloves","Glove"],["Socks","Sock"],["Tie","Necktie"],["Belt","Belt (clothing)"],["Sneakers","Sneakers"],["Boots","Boot"],["High Heels","High-heeled shoe"],["Sandals","Sandal"],["Hat","Hat"],["Sunglasses","Sunglasses"],["Bow Tie","Bow tie"],["Vest","Waistcoat"],["Kimono","Kimono"],["Pajamas","Pajamas"]],"Famous Cats & Big Cats":[["Lion","Lion"],["Tiger","Tiger"],["Leopard","Leopard"],["Cheetah","Cheetah"],["Jaguar","Jaguar"],["Cougar","Cougar"],["Lynx","Lynx"],["Panther","Black panther"],["Snow Leopard","Snow leopard"],["Bobcat","Bobcat"],["Persian Cat","Persian cat"],["Siamese Cat","Siamese cat"],["Maine Coon","Maine Coon"],["Bengal Cat","Bengal cat"],["Sphynx Cat","Sphynx cat"],["Ragdoll","Ragdoll"],["British Shorthair","British Shorthair"],["Scottish Fold","Scottish Fold"],["Tabby Cat","Tabby cat"],["Caracal","Caracal"],["Ocelot","Ocelot"],["Serval","Serval"],["Abyssinian","Abyssinian cat"],["Manx Cat","Manx cat"],["Calico Cat","Calico cat"]],"Famous Islands":[["Hawaii","Hawaii (island)"],["Bali","Bali"],["Santorini","Santorini"],["Maldives","Maldives"],["Iceland","Iceland"],["Sicily","Sicily"],["Madagascar","Madagascar"],["Fiji","Fiji"],["Bora Bora","Bora Bora"],["Capri","Capri"],["Mauritius","Mauritius"],["Seychelles","Seychelles"],["Cyprus","Cyprus"],["Malta","Malta"],["Greenland","Greenland"],["Tahiti","Tahiti"],["Jamaica","Jamaica"],["Cuba","Cuba"],["Crete","Crete"],["Sardinia","Sardinia"],["Phuket","Phuket Province"],["Galapagos","Galápagos Islands"],["Easter Island","Easter Island"],["Ibiza","Ibiza"],["Bahamas","The Bahamas"]],"Body Parts & Anatomy":[["Heart","Heart"],["Brain","Brain"],["Lungs","Lung"],["Eye","Human eye"],["Ear","Ear"],["Hand","Hand"],["Foot","Foot"],["Skeleton","Human skeleton"],["Skull","Skull"],["Spine","Vertebral column"],["Kidney","Kidney"],["Liver","Liver"],["Stomach","Stomach"],["Teeth","Tooth"],["Nose","Human nose"],["Tongue","Tongue"],["Muscle","Muscle"],["Rib Cage","Rib cage"],["DNA","DNA"],["Blood Cells","Blood cell"],["Neuron","Neuron"],["Intestine","Gastrointestinal tract"],["Fingerprint","Fingerprint"],["Veins","Vein"],["Hair","Hair"]],"World Cuisine & Dishes":[["Pizza","Pizza"],["Sushi","Sushi"],["Hamburger","Hamburger"],["Tacos","Taco"],["Pasta","Pasta"],["Curry","Curry"],["Ramen","Ramen"],["Paella","Paella"],["Dumplings","Dumpling"],["Falafel","Falafel"],["Burrito","Burrito"],["Pho","Pho"],["Fish and Chips","Fish and chips"],["Croissant","Croissant"],["Hummus","Hummus"],["Kebab","Kebab"],["Lasagna","Lasagne"],["Pad Thai","Pad thai"],["Risotto","Risotto"],["Fried Rice","Fried rice"],["Spring Roll","Spring roll"],["Nachos","Nachos"],["Pancakes","Pancake"],["Steak","Steak"],["Omelette","Omelette"]],"Tools of Music & Audio":[["Headphones","Headphones"],["Microphone","Microphone"],["Speaker","Loudspeaker"],["Vinyl Record","Phonograph record"],["Turntable","Phonograph"],["Cassette Tape","Cassette tape"],["CD","Compact disc"],["Radio","Radio"],["Amplifier","Guitar amplifier"],["Synthesizer","Synthesizer"],["Metronome","Metronome"],["Tuning Fork","Tuning fork"],["Earbuds","Headphones"],["Boombox","Boombox"],["Megaphone","Megaphone"],["Mixing Console","Mixing console"],["Jukebox","Jukebox"],["Gramophone","Phonograph"],["Drum Machine","Drum machine"],["Equalizer","Equalization (audio)"],["Walkman","Walkman"],["MP3 Player","MP3 player"],["Music Stand","Music stand"],["Sheet Music","Sheet music"],["Conductor's Baton","Baton (conducting)"]],"Anime Series":[["Naruto","Naruto"],["One Piece","One Piece"],["Dragon Ball","Dragon Ball"],["Bleach","Bleach (manga)"],["Attack on Titan","Attack on Titan"],["Death Note","Death Note"],["Demon Slayer","Demon Slayer: Kimetsu no Yaiba"],["My Hero Academia","My Hero Academia"],["Fullmetal Alchemist","Fullmetal Alchemist"],["Sailor Moon","Sailor Moon"],["Pokemon","Pokémon (anime)"],["Tokyo Ghoul","Tokyo Ghoul"],["Hunter x Hunter","Hunter × Hunter"],["Jujutsu Kaisen","Jujutsu Kaisen"],["One Punch Man","One-Punch Man"],["Sword Art Online","Sword Art Online"],["Fairy Tail","Fairy Tail"],["Cowboy Bebop","Cowboy Bebop"],["Neon Genesis Evangelion","Neon Genesis Evangelion"],["Spirited Away","Spirited Away"],["Your Name","Your Name"],["Code Geass","Code Geass"],["Steins;Gate","Steins;Gate"],["Mob Psycho 100","Mob Psycho 100"],["Chainsaw Man","Chainsaw Man"]],"Anime Characters":[["Goku","Goku"],["Naruto Uzumaki","Naruto Uzumaki"],["Monkey D. Luffy","Monkey D. Luffy"],["Ichigo Kurosaki","Ichigo Kurosaki"],["Light Yagami","Light Yagami"],["Eren Yeager","Eren Yeager"],["Tanjiro Kamado","Tanjiro Kamado"],["Edward Elric","Edward Elric"],["Saitama","Saitama (One-Punch Man)"],["Vegeta","Vegeta"],["Sasuke Uchiha","Sasuke Uchiha"],["Levi Ackerman","Levi Ackerman"],["Spike Spiegel","Spike Spiegel"],["Lelouch Lamperouge","Lelouch Lamperouge"],["Gon Freecss","Gon Freecss"],["Killua Zoldyck","Killua Zoldyck"],["Mikasa Ackerman","Mikasa Ackerman"],["Itachi Uchiha","Itachi Uchiha"],["Roronoa Zoro","Roronoa Zoro"],["Asta","Asta (Black Clover)"],["Gojo Satoru","Satoru Gojo"],["Yuji Itadori","Yuji Itadori"],["Inuyasha","Inuyasha (character)"],["Kakashi Hatake","Kakashi Hatake"],["Rem","Rem (Re:Zero)"]],"Anime Villains":[["Frieza","Frieza"],["Madara Uchiha","Madara Uchiha"],["Pain","Pain (Naruto)"],["Aizen","Sosuke Aizen"],["All For One","All For One (character)"],["Muzan Kibutsuji","Muzan Kibutsuji"],["Father","Father (Fullmetal Alchemist)"],["Dio Brando","Dio Brando"],["Cell","Cell (Dragon Ball)"],["Majin Buu","Majin Buu"],["Orochimaru","Orochimaru (Naruto)"],["Sukuna","Ryomen Sukuna"],["Meruem","Meruem"],["Johan Liebert","Johan Liebert"],["Shigaraki","Tomura Shigaraki"],["Kurogiri","List of My Hero Academia characters"],["Zeke Yeager","Zeke Yeager"],["Hisoka","Hisoka Morow"],["Kaguya Otsutsuki","Kaguya Ōtsutsuki"],["Crocodile","Crocodile (One Piece)"],["Doflamingo","Donquixote Doflamingo"],["Blackbeard","Marshall D. Teach"],["Griffith","Griffith (Berserk)"],["Naraku","Naraku"],["The Major","Hellsing"]],"Video Game Characters":[["Mario","Mario"],["Luigi","Luigi"],["Link","Link (The Legend of Zelda)"],["Master Chief","Master Chief (Halo)"],["Kratos","Kratos (God of War)"],["Lara Croft","Lara Croft"],["Sonic","Sonic the Hedgehog"],["Pac-Man","Pac-Man"],["Donkey Kong","Donkey Kong"],["Solid Snake","Solid Snake"],["Princess Peach","Princess Peach"],["Bowser","Bowser"],["Yoshi","Yoshi"],["Kirby","Kirby (character)"],["Samus Aran","Samus Aran"],["Pikachu","Pikachu"],["Geralt of Rivia","Geralt of Rivia"],["Nathan Drake","Nathan Drake"],["Cloud Strife","Cloud Strife"],["Crash Bandicoot","Crash Bandicoot (character)"],["Ezio Auditore","Ezio Auditore da Firenze"],["Steve","Minecraft"],["Doomguy","Doomguy"],["Ryu","Ryu (Street Fighter)"],["Mega Man","Mega Man (character)"]],"Video Games":[["Minecraft","Minecraft"],["Fortnite","Fortnite"],["Tetris","Tetris"],["Grand Theft Auto V","Grand Theft Auto V"],["The Legend of Zelda","The Legend of Zelda"],["Super Mario Bros.","Super Mario Bros."],["Call of Duty","Call of Duty"],["League of Legends","League of Legends"],["Among Us","Among Us"],["The Witcher 3","The Witcher 3: Wild Hunt"],["God of War","God of War (2018 video game)"],["Red Dead Redemption 2","Red Dead Redemption 2"],["Elden Ring","Elden Ring"],["Halo","Halo (franchise)"],["Pac-Man","Pac-Man"],["Pokemon","Pokémon"],["Counter-Strike","Counter-Strike"],["Overwatch","Overwatch"],["FIFA","EA Sports FC"],["Animal Crossing","Animal Crossing"],["Cyberpunk 2077","Cyberpunk 2077"],["Doom","Doom (1993 video game)"],["Sonic the Hedgehog","Sonic the Hedgehog (1991 video game)"],["Street Fighter","Street Fighter"],["Final Fantasy","Final Fantasy"]],"Japanese Food":[["Sushi","Sushi"],["Ramen","Ramen"],["Tempura","Tempura"],["Sashimi","Sashimi"],["Udon","Udon"],["Miso Soup","Miso soup"],["Onigiri","Onigiri"],["Takoyaki","Takoyaki"],["Okonomiyaki","Okonomiyaki"],["Gyoza","Jiaozi"],["Yakitori","Yakitori"],["Tonkatsu","Tonkatsu"],["Mochi","Mochi"],["Edamame","Edamame"],["Dango","Dango"],["Katsudon","Katsudon"],["Soba","Soba"],["Natto","Nattō"],["Taiyaki","Taiyaki"],["Curry Rice","Japanese curry"],["Bento","Bento"],["Matcha","Matcha"],["Wagyu","Wagyu"],["Unagi","Unagi"],["Chirashi","Chirashizushi"]],"Arabic Food":[["Hummus","Hummus"],["Falafel","Falafel"],["Shawarma","Shawarma"],["Kabsa","Kabsa"],["Mansaf","Mansaf"],["Tabbouleh","Tabbouleh"],["Baklava","Baklava"],["Maqluba","Maqluba"],["Kibbeh","Kibbeh"],["Fattoush","Fattoush"],["Shakshouka","Shakshouka"],["Mujadara","Mujaddara"],["Knafeh","Kanafeh"],["Dolma","Dolma"],["Maamoul","Ma'amoul"],["Foul Medames","Ful medames"],["Manakish","Manakish"],["Harira","Harira"],["Molokhia","Molокhia"],["Umm Ali","Umm Ali"],["Warak Enab","Dolma"],["Mandi","Mandi (dish)"],["Tahini","Tahini"],["Labneh","Strained yogurt"],["Qatayef","Qatayef"]],"Brand Logos":[["Nike","Nike, Inc."],["Apple","Apple Inc."],["McDonald's","McDonald's"],["Mercedes-Benz","Mercedes-Benz"],["Starbucks","Starbucks"],["Twitter","Twitter"],["Shell","Shell plc"],["Audi","Audi"],["BMW","BMW"],["Adidas","Adidas"],["Puma","Puma (brand)"],["Lacoste","Lacoste"],["Playboy","Playboy"],["WWF","World Wide Fund for Nature"],["Mastercard","Mastercard"],["Mitsubishi","Mitsubishi"],["Toyota","Toyota"],["Chanel","Chanel"],["Ferrari","Ferrari"],["Lamborghini","Lamborghini"],["Michelin","Michelin"],["NASA","NASA"],["Penguin Books","Penguin Books"],["Olympics","Olympic symbols"],["Target","Target Corporation"]],"Makeup Items":[["Lipstick","Lipstick"],["Mascara","Mascara"],["Foundation","Foundation (cosmetics)"],["Eyeliner","Eye liner"],["Eyeshadow","Eye shadow"],["Blush","Rouge (cosmetics)"],["Concealer","Concealer"],["Lip Gloss","Lip gloss"],["Powder","Face powder"],["Bronzer","Bronzer"],["Highlighter","Highlighter (cosmetics)"],["Nail Polish","Nail polish"],["Makeup Brush","Cosmetic brush"],["Beauty Blender","Beauty Blender"],["Primer","Primer (cosmetics)"],["Setting Spray","Setting spray"],["Lip Liner","Lip liner"],["Eyebrow Pencil","Eyebrow pencil"],["False Eyelashes","Artificial hair integrations"],["Compact","Compact (cosmetics)"],["Tweezers","Tweezers"],["Eyelash Curler","Eyelash curler"],["Kohl","Kohl (cosmetics)"],["Perfume","Perfume"],["Contour Palette","Contouring"]],"Arabic Public Figures":[["King Salman","Salman of Saudi Arabia"],["Mohammed bin Salman","Mohammed bin Salman"],["Sheikh Zayed","Zayed bin Sultan Al Nahyan"],["Gamal Abdel Nasser","Gamal Abdel Nasser"],["Yasser Arafat","Yasser Arafat"],["King Abdullah II","Abdullah II of Jordan"],["Saddam Hussein","Saddam Hussein"],["Muammar Gaddafi","Muammar Gaddafi"],["King Hussein","Hussein of Jordan"],["Anwar Sadat","Anwar Sadat"],["Sheikh Mohammed","Mohammed bin Rashid Al Maktoum"],["Hosni Mubarak","Hosni Mubarak"],["Rafic Hariri","Rafic Hariri"],["King Faisal","Faisal of Saudi Arabia"],["Queen Rania","Rania of Jordan"],["Mohammed bin Zayed","Mohamed bin Zayed Al Nahyan"],["Tamim bin Hamad","Tamim bin Hamad Al Thani"],["Bashar al-Assad","Bashar al-Assad"],["Naguib Mahfouz","Naguib Mahfouz"],["Mahmoud Darwish","Mahmoud Darwish"],["Omar Sharif","Omar Sharif"],["Nizar Qabbani","Nizar Qabbani"],["Ahmed Zewail","Ahmed Zewail"],["Taha Hussein","Taha Hussein"],["King Mohammed VI","Mohammed VI of Morocco"]],"Famous World Leaders":[["Winston Churchill","Winston Churchill"],["Nelson Mandela","Nelson Mandela"],["Mahatma Gandhi","Mahatma Gandhi"],["Abraham Lincoln","Abraham Lincoln"],["Queen Elizabeth II","Elizabeth II"],["Vladimir Putin","Vladimir Putin"],["Angela Merkel","Angela Merkel"],["Napoleon","Napoleon"],["Margaret Thatcher","Margaret Thatcher"],["Charles de Gaulle","Charles de Gaulle"],["Mikhail Gorbachev","Mikhail Gorbachev"],["Mao Zedong","Mao Zedong"],["Fidel Castro","Fidel Castro"],["Indira Gandhi","Indira Gandhi"],["Franklin D. Roosevelt","Franklin D. Roosevelt"],["John F. Kennedy","John F. Kennedy"],["Barack Obama","Barack Obama"],["Emmanuel Macron","Emmanuel Macron"],["Justin Trudeau","Justin Trudeau"],["Xi Jinping","Xi Jinping"],["Narendra Modi","Narendra Modi"],["Kemal Ataturk","Mustafa Kemal Atatürk"],["Pope Francis","Pope Francis"],["Dalai Lama","14th Dalai Lama"],["Volodymyr Zelenskyy","Volodymyr Zelenskyy"]],"Famous Singers":[["Michael Jackson","Michael Jackson"],["Beyonce","Beyoncé"],["Elvis Presley","Elvis Presley"],["Madonna","Madonna"],["Freddie Mercury","Freddie Mercury"],["Taylor Swift","Taylor Swift"],["Adele","Adele"],["Rihanna","Rihanna"],["Bruno Mars","Bruno Mars"],["Lady Gaga","Lady Gaga"],["Ed Sheeran","Ed Sheeran"],["Whitney Houston","Whitney Houston"],["Frank Sinatra","Frank Sinatra"],["Justin Bieber","Justin Bieber"],["Ariana Grande","Ariana Grande"],["Billie Eilish","Billie Eilish"],["The Weeknd","The Weeknd"],["Drake","Drake (musician)"],["Eminem","Eminem"],["Bob Marley","Bob Marley"],["Stevie Wonder","Stevie Wonder"],["Celine Dion","Celine Dion"],["Shakira","Shakira"],["Bruno","Bruno Mars"],["Dua Lipa","Dua Lipa"]],"Movies":[["Titanic","Titanic (1997 film)"],["Avatar","Avatar (2009 film)"],["The Godfather","The Godfather"],["Star Wars","Star Wars (film)"],["Jurassic Park","Jurassic Park (film)"],["The Lion King","The Lion King"],["Forrest Gump","Forrest Gump"],["The Matrix","The Matrix"],["Inception","Inception"],["Gladiator","Gladiator (2000 film)"],["Pulp Fiction","Pulp Fiction"],["The Dark Knight","The Dark Knight"],["Frozen","Frozen (2013 film)"],["Avengers: Endgame","Avengers: Endgame"],["Joker","Joker (2019 film)"],["Parasite","Parasite (2019 film)"],["Interstellar","Interstellar (film)"],["The Shawshank Redemption","The Shawshank Redemption"],["Schindler's List","Schindler's List"],["Toy Story","Toy Story"],["Harry Potter","Harry Potter (film series)"],["The Lord of the Rings","The Lord of the Rings (film series)"],["Spider-Man","Spider-Man (2002 film)"],["Black Panther","Black Panther (film)"],["Fight Club","Fight Club"]],"Movie Characters":[["James Bond","James Bond"],["Indiana Jones","Indiana Jones"],["Darth Vader","Darth Vader"],["Forrest Gump","Forrest Gump"],["Harry Potter","Harry Potter"],["Jack Sparrow","Jack Sparrow"],["The Joker","Joker (character)"],["Rocky Balboa","Rocky Balboa"],["Tony Stark","Iron Man"],["Hermione Granger","Hermione Granger"],["Gandalf","Gandalf"],["Frodo Baggins","Frodo Baggins"],["Hannibal Lecter","Hannibal Lecter"],["Vito Corleone","Vito Corleone"],["Neo","Neo (The Matrix)"],["Forrest","Forrest Gump"],["Marty McFly","Marty McFly"],["John Wick","John Wick"],["Wolverine","Wolverine (character)"],["Katniss Everdeen","Katniss Everdeen"],["Han Solo","Han Solo"],["Luke Skywalker","Luke Skywalker"],["Terminator","Terminator (character)"],["Ellen Ripley","Ellen Ripley"],["Maximus","Maximus Decimus Meridius"]],"Famous Arabic Singers":[["Umm Kulthum","Umm Kulthum"],["Fairuz","Fairuz"],["Abdel Halim Hafez","Abdel Halim Hafez"],["Mohammed Abdel Wahab","Mohammed Abdel Wahab"],["Amr Diab","Amr Diab"],["Nancy Ajram","Nancy Ajram"],["Elissa","Elissa (singer)"],["Kadim Al Sahir","Kadim Al Sahir"],["Wael Kfoury","Wael Kfoury"],["Mohammed Abdu","Mohammed Abdu"],["Talal Maddah","Talal Maddah"],["Warda","Warda Al-Jazairia"],["Sabah","Sabah (singer)"],["Najwa Karam","Najwa Karam"],["Ragheb Alama","Ragheb Alama"],["George Wassouf","George Wassouf"],["Asmahan","Asmahan"],["Farid al-Atrash","Farid al-Atrash"],["Sherine","Sherine"],["Tamer Hosny","Tamer Hosny"],["Majida El Roumi","Majida El Roumi"],["Abdul Majeed Abdullah","Abdul Majeed Abdullah"],["Hussein Al Jasmi","Hussain Al Jassmi"],["Carole Samaha","Carole Samaha"],["Marcel Khalife","Marcel Khalife"]]};
 
 </script>
 <script id="appScript">
@@ -506,19 +538,37 @@ function attackTargets(pid){
 function isBorder(b){ return b.owner!==null && neighbors(b).some(nb=>nb.owner!==null && nb.owner!==b.owner); }
 
 // ===================================================================
-// CONNECTION  (PeerJS — room-code peer-to-peer)
+// CONNECTION  (PeerJS — multi-client hub: 1 host screen + N player phones)
 // ===================================================================
-let peer=null, conn=null, ROLE=null, ROOM=null, connLive=false;
+let peer=null, ROLE=null, ROOM=null, connLive=false;
 let hbTimer=null, reconnectTimer=null, joinAttempts=0;
+// HOST side: a map of all connected player devices, keyed by a clientId.
+let peers={};            // clientId -> { conn, name, playerId, alive }
+// PLAYER side: the single connection back to the host.
+let conn=null;
+let MYID=null;           // this device's clientId (player side)
+let MYNAME=null;         // this device's chosen name (player side)
+let MYROLE='player';     // this device's role: 'player' | 'judge'
+let onLobbyChange=null;  // host callback when roster changes
 const PREFIX='GRIDDUEL2-';
-// STUN servers greatly improve cross-network connection success
 const PEER_CFG={ config:{ iceServers:[
   {urls:'stun:stun.l.google.com:19302'},
   {urls:'stun:stun1.l.google.com:19302'},
   {urls:'stun:global.stun.twilio.com:3478'}
 ]}, debug:1 };
 function makeCode(){const c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let s='';for(let i=0;i<4;i++)s+=c[(Math.random()*c.length)|0];return s;}
-function send(m){ if(conn&&conn.open){ try{conn.send(m);}catch(e){console.warn(e);} } }
+function makeClientId(){ return 'c'+Math.random().toString(36).slice(2,9); }
+
+// Broadcast a message to every connected player device (host only).
+function broadcast(m){
+  for(const id in peers){ const p=peers[id]; if(p.conn&&p.conn.open){ try{p.conn.send(m);}catch(e){} } }
+}
+// Send to one specific player device (host only).
+function sendTo(clientId,m){ const p=peers[clientId]; if(p&&p.conn&&p.conn.open){ try{p.conn.send(m);}catch(e){} } }
+// Player side: send a message to the host.
+function sendHost(m){ if(conn&&conn.open){ try{conn.send(m);}catch(e){console.warn(e);} } }
+// Back-compat shim used by older code paths (single-conn). Routes to broadcast.
+function send(m){ broadcast(m); }
 
 // --- Custom connection server (your own reliable host, replaces public broker) ---
 function getServerURL(){ try{ return localStorage.getItem('gd_server')||''; }catch(e){ return _serverMem||''; } }
@@ -552,14 +602,14 @@ function hostRoom(onReady){
   peer=new Peer(PREFIX+ROOM,peerOptions());
   peer.on('open',()=>onReady(ROOM));
   peer.on('connection',(c)=>{
-    conn=c;
+    // Each incoming connection is one player device.
     c.on('open',()=>{
-      setConnLive(true); send({t:'state',s:STATE});
-      startHeartbeat();   // periodic state re-sync so dropped messages self-heal
+      // wait for the player to identify (join message) before adding to roster
+      setConnLive(true);
     });
-    c.on('data',handleJudgeMsg);
-    c.on('close',()=>{ setConnLive(false); stopHeartbeat(); });
-    c.on('error',()=>{ setConnLive(false); });
+    c.on('data',(m)=>handlePlayerMsg(c,m));
+    c.on('close',()=>{ markPeerDead(c); });
+    c.on('error',()=>{ markPeerDead(c); });
   });
   peer.on('error',(e)=>{
     if(e.type==='unavailable-id'){ peer.destroy(); hostRoom(onReady); }
@@ -567,35 +617,123 @@ function hostRoom(onReady){
     else { showToast('Connection issue: '+e.type); }
   });
   peer.on('disconnected',()=>{ try{peer.reconnect();}catch(_){} });
+  startHeartbeat();
 }
-function joinRoom(code,cb){
+
+// HOST: handle a message from a player device.
+function handlePlayerMsg(c, m){
+  if(!m||!m.t) return;
+  if(m.t==='hello'){
+    // Player/Judge joining (or rejoining). role: 'player' | 'judge'
+    let id=m.clientId;
+    if(id && peers[id]){
+      peers[id].conn=c; peers[id].alive=true; peers[id].name=m.name||peers[id].name; peers[id].role=m.role||peers[id].role||'player';
+    } else {
+      id = id || makeClientId();
+      peers[id]={ conn:c, name:m.name||'Player', playerId:null, role:m.role||'player', alive:true };
+    }
+    c.__cid=id;
+    sendTo(id,{t:'welcome', clientId:id});
+    sendTo(id,{t:'state', s:STATE});
+    if(onLobbyChange) onLobbyChange();
+    refresh();
+  } else if(m.t==='action'){
+    // Only accept actions from the player whose turn/role it is (validated in applyAction).
+    const id=c.__cid;
+    applyAction(m.action, Object.assign({}, m.payload, {__from:id, __fromPlayerId: peers[id]?peers[id].playerId:null}));
+  } else if(m.t==='ping'){
+    const id=c.__cid; if(peers[id]) peers[id].alive=true;
+    if(id) sendTo(id,{t:'pong'});
+  }
+}
+function markPeerDead(c){
+  const id=c.__cid; if(id&&peers[id]){ peers[id].alive=false; }
+  if(onLobbyChange) onLobbyChange();
+}
+// Roster helpers (host)
+function lobbyPlayers(){ return Object.keys(peers).filter(id=>(peers[id].role||'player')==='player').map(id=>({clientId:id, name:peers[id].name, playerId:peers[id].playerId, alive:peers[id].alive})); }
+function lobbyJudges(){ return Object.keys(peers).filter(id=>peers[id].role==='judge').map(id=>({clientId:id, name:peers[id].name, alive:peers[id].alive})); }
+function hasJudge(){ return Object.keys(peers).some(id=>peers[id].role==='judge'&&peers[id].alive); }
+function assignPlayerSlots(){
+  // Map connected PLAYER devices to player ids 0..n-1 in join order.
+  const ids=Object.keys(peers).filter(id=>(peers[id].role||'player')==='player'&&peers[id].alive);
+  let pid=0;
+  ids.forEach(id=>{ peers[id].playerId=pid++; });
+  return ids.length;
+}
+function clientIdToPlayerId(cid){ return peers[cid]?peers[cid].playerId:null; }
+function setLobbyCallback(fn){ onLobbyChange=fn; }
+// PLAYER/JUDGE: join a room with a chosen name and role ('player'|'judge').
+function joinRoom(code, name, roleOrCb, cb){
+  // back-compat: (code,name,cb)
+  let role='player';
+  if(typeof roleOrCb==='function'){ cb=roleOrCb; } else if(roleOrCb){ role=roleOrCb; }
+  MYROLE=role;
   ROOM=code.toUpperCase();
+  MYNAME=name||MYNAME||'Player';
+  try{ MYID = MYID || localStorage.getItem('gd_clientid') || makeClientId(); localStorage.setItem('gd_clientid',MYID); }
+  catch(e){ MYID = MYID || makeClientId(); }
   joinAttempts++;
   peer=new Peer(peerOptions());
   let settled=false;
   peer.on('open',()=>{
     conn=peer.connect(PREFIX+ROOM,{reliable:true});
-    conn.on('open',()=>{ settled=true; setConnLive(true); cb(true); });
-    conn.on('data',handleStageMsg);
-    conn.on('close',()=>{ setConnLive(false); showToast('Screen disconnected — trying to reconnect…'); scheduleRejoin(code); });
+    conn.on('open',()=>{
+      settled=true; setConnLive(true);
+      sendHost({t:'hello', clientId:MYID, name:MYNAME, role:MYROLE});
+      startPlayerPing();
+      cb&&cb(true);
+    });
+    conn.on('data',handleHostMsg);
+    conn.on('close',()=>{ setConnLive(false); showToast('Lost connection — reconnecting…'); scheduleRejoin(code); });
     conn.on('error',()=>{ setConnLive(false); });
-    // retry once automatically before reporting failure
-    setTimeout(()=>{ if(!settled){ if(joinAttempts<2){ try{peer.destroy();}catch(_){} joinRoom(code,cb); } else { cb(false,'Could not reach the Screen. Check both are online & the code is right.'); } } },9000);
+    setTimeout(()=>{ if(!settled){ if(joinAttempts<2){ try{peer.destroy();}catch(_){} joinRoom(code,MYNAME,MYROLE,cb); } else { cb&&cb(false,'Could not reach the host. Check the code & that the host screen is open.'); } } },9000);
   });
   peer.on('error',(e)=>{
-    if(e.type==='peer-unavailable'){ settled=true; cb(false,'No room with that code — is the Screen hosting?'); }
-    else if(!settled && joinAttempts<2){ try{peer.destroy();}catch(_){} joinRoom(code,cb); }
-    else if(!settled){ cb(false, e.type); }
+    if(e.type==='peer-unavailable'){ settled=true; cb&&cb(false,'No game with that code — is the host screen open?'); }
+    else if(!settled && joinAttempts<2){ try{peer.destroy();}catch(_){} joinRoom(code,MYNAME,MYROLE,cb); }
+    else if(!settled){ cb&&cb(false, e.type); }
   });
 }
 function scheduleRejoin(code){
   if(reconnectTimer) return;
-  reconnectTimer=setTimeout(()=>{ reconnectTimer=null; if(!connLive && ROLE==='judge'){ joinAttempts=0; joinRoom(code,(ok)=>{ if(ok) showToast('Reconnected!'); }); } },2500);
+  reconnectTimer=setTimeout(()=>{ reconnectTimer=null; if(!connLive && (ROLE==='player'||ROLE==='judge')){ joinAttempts=0; joinRoom(code,MYNAME,MYROLE,(ok)=>{ if(ok) showToast('Reconnected!'); }); } },2000);
 }
-function startHeartbeat(){ stopHeartbeat(); hbTimer=setInterval(()=>{ if(connLive) send({t:'state',s:STATE}); },4000); }
+// Player heartbeat so the host knows we're alive; also helps detect wake.
+let pingTimer=null;
+function startPlayerPing(){ stopPlayerPing(); pingTimer=setInterval(()=>{ sendHost({t:'ping'}); },5000); }
+function stopPlayerPing(){ if(pingTimer){clearInterval(pingTimer);pingTimer=null;} }
+
+// PLAYER/JUDGE: handle messages from host.
+function handleHostMsg(m){
+  if(!m||!m.t) return;
+  if(m.t==='welcome'){ MYID=m.clientId; try{localStorage.setItem('gd_clientid',MYID);}catch(e){} }
+  else if(m.t==='state'){
+    STATE=m.s;
+    if(MYROLE==='judge'){ if(window.__renderJudge) window.__renderJudge(); }
+    else { if(window.__renderPlayer) window.__renderPlayer(); }
+  }
+  else if(m.t==='pong'){ /* alive confirmed */ }
+}
+function startHeartbeat(){ stopHeartbeat(); hbTimer=setInterval(()=>{ if(ROLE==='stage') broadcast({t:'state',s:STATE}); },4000); }
 function stopHeartbeat(){ if(hbTimer){clearInterval(hbTimer);hbTimer=null;} }
 function setConnLive(v){ connLive=v; if(window.__onConn) window.__onConn(v); }
 
+// When a backgrounded phone (e.g. opened WhatsApp) comes back, force a resync.
+if(typeof document!=='undefined' && document.addEventListener){
+  document.addEventListener('visibilitychange',()=>{
+    if(document.visibilityState==='visible'){
+      if(ROLE==='player'||ROLE==='judge'){
+        if(!connLive && ROOM){ joinAttempts=0; joinRoom(ROOM,MYNAME,MYROLE,(ok)=>{ if(ok) showToast('Reconnected!'); }); }
+        else { sendHost({t:'ping'}); }
+      } else if(ROLE==='stage'){
+        broadcast({t:'state',s:STATE});
+      }
+    }
+  });
+}
+
+// Legacy handlers retained for any single-conn code paths during transition.
 function handleJudgeMsg(m){ if(m.t==='action') applyAction(m.action,m.payload); }
 function handleStageMsg(m){ if(m.t==='state'){ STATE=m.s; if(window.__renderJudge) window.__renderJudge(); } }
 
@@ -604,21 +742,43 @@ function handleStageMsg(m){ if(m.t==='state'){ STATE=m.s; if(window.__renderJudg
 // ===================================================================
 let soloMode=false;
 function refresh(){
-  if(soloMode){ if(window.__renderStage)window.__renderStage(); if(window.__renderJudge)window.__renderJudge(); }
-  else if(ROLE==='stage'){ send({t:'state',s:STATE}); if(window.__renderStage)window.__renderStage(); }
+  if(soloMode){ if(window.__renderStage)window.__renderStage(); if(window.__renderPlayer)window.__renderPlayer(); if(window.__renderJudge)window.__renderJudge(); }
+  else if(ROLE==='stage'){ broadcast({t:'state',s:STATE}); if(window.__renderStage)window.__renderStage(); }
+  else if(ROLE==='player'){ if(window.__renderPlayer)window.__renderPlayer(); }
   else if(ROLE==='judge'){ if(window.__renderJudge)window.__renderJudge(); }
 }
 
 // ===================================================================
-// ACTIONS  (authority = stage or solo)
+// ACTIONS  (authority = host/stage or solo; players send to host)
 // ===================================================================
+// A player device requests an action; on host/solo it runs locally, else sent.
 function judgeAct(action,payload){
   if(soloMode||ROLE==='stage') applyAction(action,payload||{});
-  else send({t:'action',action,payload:payload||{}});
+  else sendHost({t:'action',action,payload:payload||{}});
 }
+// Alias used by player UI for clarity.
+function playerAct(action,payload){ judgeAct(action,payload); }
 
 function applyAction(action,p){
   if(!STATE) return;
+  p=p||{};
+  // --- Authorization (multiplayer) ---
+  // In hosted multiplayer, validate WHO sent the action.
+  const fromPid = (p.__fromPlayerId!=null) ? p.__fromPlayerId : null;
+  const isRemote = (p.__from!=null);
+  if(isRemote && !soloMode){
+    if(action==='draftPick'){
+      // Only the player whose turn it is may pick.
+      if(!STATE.draft || STATE.draft.picker!==fromPid) return;
+    }
+    // duelCorrect / duelMiss / challenge / stopConquest: only a JUDGE device may send.
+    if(action==='duelCorrect'||action==='duelMiss'||action==='challenge'||action==='stopConquest'){
+      const senderRole = peers[p.__from] ? peers[p.__from].role : null;
+      if(senderRole!=='judge') return;
+    }
+    // restart: ignore from players entirely
+    if(action==='restart') return;
+  }
   switch(action){
     case 'draftPick':      draftPick(p.blockId); break;
     case 'draftAdvance':   /* picker confirmed; handled in draftPick auto */ break;
@@ -626,7 +786,7 @@ function applyAction(action,p){
     case 'stopConquest':   pickConqueror(); break;
     case 'duelCorrect':    sfx('correct'); duelResolveTurn(true); break;
     case 'duelMiss':       sfx('pass'); duelResolveTurn(false); break;
-    case 'restart':        STATE=freshState(STATE.players.map(pl=>({id:pl.id,name:pl.name,color:pl.color})), STATE.blocks.map(b=>b.cat), STATE.rows, STATE.cols, {duelSeconds:STATE.duelSeconds, passPenalty:STATE.passPenalty}); break;
+    case 'restart':        STATE=freshState(STATE.players.map(pl=>({id:pl.id,name:pl.name,color:pl.color,clientId:pl.clientId})), STATE.blocks.map(b=>b.cat), STATE.rows, STATE.cols, {duelSeconds:STATE.duelSeconds, passPenalty:STATE.passPenalty}); break;
   }
   refresh();
 }
@@ -970,8 +1130,11 @@ window.__GD={
   get ROOM(){return ROOM;}, get connLive(){return connLive;},
   get soloMode(){return soloMode;}, set soloMode(v){soloMode=v;},
   get GAME_CONTENT(){return CONTENT;}, setContent,
-  freshState, hostRoom, joinRoom, judgeAct, applyAction, refresh,
+  freshState, hostRoom, joinRoom, judgeAct, playerAct, applyAction, refresh,
   getServerURL, setServerURL,
+  lobbyPlayers, lobbyJudges, hasJudge, assignPlayerSlots, clientIdToPlayerId, setLobbyCallback,
+  get MYID(){return MYID;}, get MYNAME(){return MYNAME;}, get MYROLE(){return MYROLE;},
+  get peers(){return peers;},
   fetchImage, getImage, idbCount, clearPhotoCache, showToast, shuffle,
   sfx, setSound, getSound,
   blockAt, neighbors, ownedBy, tileCount, attackTargets, isBorder, draftPickable,
@@ -985,6 +1148,8 @@ window.__GD={
 'use strict';
 const GD=window.__GD;
 const {PCOLORS,$,app,fetchImage,judgeAct,showToast}=GD;
+const playerAct=GD.playerAct||judgeAct;
+let currentScreen=null;   // tracks which screen is showing (menu/lobby/game/...)
 
 function el(t,c,h){const e=document.createElement(t);if(c)e.className=c;if(h!=null)e.innerHTML=h;return e;}
 function S(){return GD.STATE;}
@@ -1008,10 +1173,11 @@ function renderMenu(){
     <div class="sub">Territory Showdown</div>
     <div class="tile-grid-deco">${'<i></i>'.repeat(18)}</div></div>`;
   const m=el('div','menu');
-  const b1=el('button','btn','📺  Be the Screen (Host)'); b1.onclick=()=>{GD.soloMode=false;setupFlow();};
-  const b2=el('button','btn alt','⚖️  Be the Judge (Join)'); b2.onclick=joinFlow;
-  const b3=el('button','btn ghost','🎮  Single device'); b3.onclick=()=>{GD.soloMode=true;setupFlow();};
-  m.append(b1,b2,b3); w.append(m);
+  const b1=el('button','btn','📺  Host a Game (Screen/TV)'); b1.onclick=()=>{GD.soloMode=false;hostSetupFlow();};
+  const b2=el('button','btn alt','📱  Join as Player'); b2.onclick=playerJoinFlow;
+  const b3=el('button','btn alt','⚖️  Join as Judge'); b3.onclick=judgeJoinFlow;
+  const b4=el('button','btn ghost','🎮  Single device (pass & play)'); b4.onclick=()=>{GD.soloMode=true;setupFlow();};
+  m.append(b1,b2,b3,b4); w.append(m);
 
   // ---- custom question pack loader ----
   const packCard=el('div','card'); packCard.style.marginTop='16px';
@@ -1089,20 +1255,28 @@ function loadPackFile(file){
 // ===================================================================
 // SETUP  (players, board size, duel time)
 // ===================================================================
-function setupFlow(){
+function setupFlow(opts){
+  opts=opts||{};
+  if(opts.hostMode!==undefined) cfg.hostMode=opts.hostMode;
+  const hostMode=!!cfg.hostMode;
   app.innerHTML='';
   const w=el('div','wrap');
   const back=el('button','back','‹ Back'); back.onclick=renderMenu; w.append(back);
-  w.append(el('h2',null,'Players'));
-  w.insertAdjacentHTML('beforeend','<p class="note">2–8 players. Each will secretly draft a connected territory.</p>');
-  const card=el('div','card'); card.style.marginTop='12px';
-  const list=el('div','players-list'); list.id='pl'; card.append(list);
-  const add=el('button','btn ghost small','+ Add Player'); add.style.marginTop='8px';
-  add.onclick=()=>{ if(cfg.players.length<8){cfg.players.push({name:'Player '+(cfg.players.length+1)});paintPlayers();} };
-  card.append(add); w.append(card);
+  if(!hostMode){
+    w.append(el('h2',null,'Players'));
+    w.insertAdjacentHTML('beforeend','<p class="note">2–8 players. Each will secretly draft a connected territory.</p>');
+    const card=el('div','card'); card.style.marginTop='12px';
+    const list=el('div','players-list'); list.id='pl'; card.append(list);
+    const add=el('button','btn ghost small','+ Add Player'); add.style.marginTop='8px';
+    add.onclick=()=>{ if(cfg.players.length<8){cfg.players.push({name:'Player '+(cfg.players.length+1)});paintPlayers();} };
+    card.append(add); w.append(card);
+  } else {
+    w.append(el('h2',null,'Host a Game'));
+    w.insertAdjacentHTML('beforeend','<p class="note">Set the board, then players join on their own phones and enter their names in the lobby.</p>');
+  }
 
   // board size
-  w.append(el('h2',null,'Board')); w.children[w.children.length-1].style.marginTop='18px';
+  const bh=el('h2',null,'Board'); bh.style.marginTop='18px'; w.append(bh);
   const bcard=el('div','card');
   bcard.innerHTML=`<div class="ph-label">Grid size (blocks = categories on the board)</div>`;
   const sizes=[['4×4',4,4],['5×5',5,5],['5×6',5,6],['6×6',6,6],['7×7',7,7],['5×10',5,10]];
@@ -1133,14 +1307,18 @@ function setupFlow(){
 
   const total=cfg.rows*cfg.cols;
   const warn=el('p','note');
-  warn.innerHTML = total>50
-    ? `⚠️ ${total} blocks but only 50 categories — some categories will repeat on the board.`
-    : `${total} blocks · ${cfg.players.length} players · ~${Math.floor(total/cfg.players.length)} blocks each.`;
+  if(hostMode){
+    warn.innerHTML = `${total} blocks · player count is set by who joins the lobby.`;
+  } else {
+    warn.innerHTML = total>50
+      ? `⚠️ ${total} blocks but only 50 categories — some categories will repeat on the board.`
+      : `${total} blocks · ${cfg.players.length} players · ~${Math.floor(total/cfg.players.length)} blocks each.`;
+  }
   w.append(warn);
 
   const go=el('button','btn good','Choose Categories  ▶'); go.style.marginTop='16px';
   go.onclick=chooseCategoriesScreen; w.append(go);
-  app.append(w); paintPlayers();
+  app.append(w); if(!hostMode) paintPlayers();
 }
 
 // ---- Category pool selector ----
@@ -1165,7 +1343,7 @@ function chooseCategoriesScreen(){
   const grid=el('div','cat-pick-grid'); grid.id='catpick'; w.append(grid);
 
   const go=el('button','btn good'); go.id='startBtn'; go.style.marginTop='16px';
-  go.onclick=launch; w.append(go);
+  go.onclick=()=>{ if(cfg.hostMode) openLobby(); else launch(); }; w.append(go);
   app.append(w);
 
   function paintCats(){
@@ -1181,10 +1359,11 @@ function chooseCategoriesScreen(){
     info.innerHTML=`<b>${sel}</b> categories selected · board needs <b>${total}</b> blocks.`;
     const ok = sel>0;
     const enough = sel>=total;
+    const verb = cfg.hostMode ? 'Open Lobby' : 'Start Draft';
     $('startBtn').disabled=!ok;
     $('startBtn').textContent = !ok ? 'Select at least 1 category'
-      : enough ? `Start Draft  ▶  (${sel} in pool)`
-      : `Start Draft  ▶  (${sel} categories — some will repeat on the ${total} blocks)`;
+      : enough ? `${verb}  ▶  (${sel} in pool)`
+      : `${verb}  ▶  (${sel} categories — some will repeat on the ${total} blocks)`;
   }
   paintCats();
 }
@@ -1218,29 +1397,127 @@ function launch(){
 }
 
 // ===================================================================
-// JOIN (judge)
+// HOST SETUP → LOBBY  (multiplayer: host screen, players on own phones)
 // ===================================================================
-function joinFlow(){
+function hostSetupFlow(){
+  // Reuse the board/options setup, then category selector, then lobby.
+  setupFlow({hostMode:true});
+}
+
+// Called from the category selector's Start button when in host mode.
+let lobbyPollTimer=null;
+function openLobby(){
+  GD.soloMode=false; GD.ROLE='stage';
+  GD.hostRoom(()=>{ renderLobby(); });
+  GD.setLobbyCallback(()=>{ if(currentScreen==='lobby') renderLobby(); });
+}
+function renderLobby(){
+  currentScreen='lobby';
+  app.innerHTML='';
+  const w=el('div','wrap lobby-wrap');
+  const code=GD.ROOM||'····';
+  const players=GD.lobbyPlayers().filter(p=>p.alive);
+  const url=(location&&location.origin&&/^https?:$/.test(location.protocol))?location.origin:'(open the game link)';
+  w.innerHTML=`<div class="lobby-head">
+      <div class="logo-sm">GRID DUEL</div>
+      <h2>Players, join on your phones</h2>
+      <p class="note">Open <b>${url}</b> → tap <b>Join on My Phone</b> → enter code:</p>
+      <div class="join-code">${code}</div>
+    </div>`;
+  const list=el('div','lobby-list');
+  if(players.length===0){ list.innerHTML='<p class="note dim">Waiting for players to join…</p>'; }
+  players.forEach((p,i)=>{
+    const row=el('div','lobby-player'); row.style.setProperty('--pc',PCOLORS[i%PCOLORS.length]);
+    row.innerHTML=`<span class="lp-dot"></span><span class="lp-name">${p.name}</span><span class="lp-tag">ready</span>`;
+    list.append(row);
+  });
+  w.append(list);
+  const startInfo=el('p','note dim'); startInfo.style.marginTop='10px';
+  startInfo.textContent = players.length<2 ? 'Need at least 2 players to start.' : `${players.length} players ready.`;
+  w.append(startInfo);
+  const start=el('button','btn good'); start.textContent='Start Game ▶'; start.disabled=players.length<2;
+  start.onclick=startHostedGame; w.append(start);
+  const cancel=el('button','btn ghost small','Cancel'); cancel.onclick=()=>{ currentScreen=null; renderMenu(); }; w.append(cancel);
+  app.append(w);
+}
+function startHostedGame(){
+  const alive=GD.lobbyPlayers().filter(p=>p.alive);
+  if(alive.length<2){ showToast('Need at least 2 players'); return; }
+  GD.assignPlayerSlots();
+  // Build players from the lobby roster (names from their phones).
+  const roster=GD.lobbyPlayers().filter(p=>p.alive);
+  const players=roster.map((p,i)=>({id:i,name:p.name||('Player '+(i+1)),color:PCOLORS[i%PCOLORS.length],clientId:p.clientId}));
+  const total=cfg.rows*cfg.cols;
+  let pool=(cfg.selectedCats&&cfg.selectedCats.length)? cfg.selectedCats.slice()
+            : Object.keys(GD.GAME_CONTENT).filter(c=>(GD.GAME_CONTENT[c]||[]).length>0);
+  pool=pool.filter(c=>(GD.GAME_CONTENT[c]||[]).length>0);
+  let cats=GD.shuffle([...pool]).slice(0,total);
+  while(cats.length<total) cats.push(pool[cats.length%pool.length]);
+  GD.STATE=GD.freshState(players,cats,cfg.rows,cfg.cols,{duelSeconds:cfg.duelSeconds,passPenalty:cfg.passPenalty});
+  // tag each state player with their controlling device clientId
+  GD.STATE.players.forEach((pl,i)=>{ pl.clientId=players[i].clientId; });
+  GD.ROLE='stage'; currentScreen='game';
+  lastPicker=-1; draftReady=false; lastStageSig=null; lastJudgeSig=null;
+  GD.refresh(); renderStage();
+}
+
+// ===================================================================
+// PLAYER JOIN (own phone)
+// ===================================================================
+function playerJoinFlow(){
+  currentScreen='playerjoin';
+  app.innerHTML='';
+  const w=el('div','wrap');
+  const back=el('button','back','‹ Back'); back.onclick=renderMenu; w.append(back);
+  w.append(el('h2',null,'Join on Your Phone'));
+  const card=el('div','card'); card.style.marginTop='12px';
+  const savedName=(function(){try{return localStorage.getItem('gd_name')||'';}catch(e){return '';}})();
+  card.innerHTML=`<div class="field"><label>Your Name</label><input id="nameIn" maxlength="14" placeholder="e.g. ${'Hashem'}" value="${savedName}"></div>
+    <div class="field"><label>Game Code</label><input class="code-input" id="codeIn" maxlength="4" placeholder="••••" autocapitalize="characters"></div>`;
+  const go=el('button','btn alt','Join Game'); go.id='cb'; card.append(go);
+  const st=el('p','note'); st.id='js'; card.append(st);
+  w.append(card); app.append(w);
+  const ci=$('codeIn'); ci.oninput=e=>e.target.value=e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,'');
+  $('nameIn').focus();
+  go.onclick=()=>{
+    const name=$('nameIn').value.trim()||'Player';
+    const code=ci.value.trim();
+    if(code.length!==4){$('js').textContent='Enter the 4-character game code.';return;}
+    try{localStorage.setItem('gd_name',name);}catch(e){}
+    GD.ROLE='player'; GD.soloMode=false; go.disabled=true; $('js').textContent='Joining…';
+    GD.joinRoom(code,name,'player',(ok,err)=>{ if(ok){ showToast('Joined!'); renderPlayer(); } else { go.disabled=false; $('js').textContent=err||'Could not join.'; } });
+  };
+}
+
+// ===================================================================
+// JUDGE JOIN (neutral device — holds answers, runs duels)
+// ===================================================================
+function judgeJoinFlow(){
+  currentScreen='judgejoin';
   app.innerHTML='';
   const w=el('div','wrap');
   const back=el('button','back','‹ Back'); back.onclick=renderMenu; w.append(back);
   w.append(el('h2',null,'Join as Judge'));
+  w.insertAdjacentHTML('beforeend','<p class="note">The judge sees the answers and runs the duel controls. Keep this device private from players.</p>');
   const card=el('div','card'); card.style.marginTop='12px';
-  card.innerHTML=`<div class="field"><label>Room Code</label><input class="code-input" id="codeIn" maxlength="4" placeholder="••••" autocapitalize="characters"></div>`;
-  const go=el('button','btn alt','Connect'); go.id='cb'; card.append(go);
+  card.innerHTML=`<div class="field"><label>Game Code</label><input class="code-input" id="codeIn" maxlength="4" placeholder="••••" autocapitalize="characters"></div>`;
+  const go=el('button','btn alt','Connect as Judge'); go.id='cb'; card.append(go);
   const st=el('p','note'); st.id='js'; card.append(st);
   w.append(card); app.append(w);
   const inp=$('codeIn'); inp.oninput=e=>e.target.value=e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,''); inp.focus();
   go.onclick=()=>{
     const code=inp.value.trim();
-    if(code.length!==4){$('js').textContent='Enter the 4-character code on the screen.';return;}
+    if(code.length!==4){$('js').textContent='Enter the 4-character game code.';return;}
     GD.ROLE='judge'; GD.soloMode=false; go.disabled=true; $('js').textContent='Connecting…';
-    GD.joinRoom(code,(ok,err)=>{ if(ok){showToast('Connected!');} else {go.disabled=false;$('js').textContent=err||'Could not connect.';} });
+    GD.joinRoom(code,'Judge','judge',(ok,err)=>{ if(ok){showToast('Connected as Judge!'); renderJudge();} else {go.disabled=false;$('js').textContent=err||'Could not connect.';} });
   };
 }
 
 // connection status hook
-window.__onConn=(v)=>{ const el2=document.querySelector('.status-pill'); if(el2){el2.classList.toggle('live',v); const tx=el2.querySelector('.txt'); if(tx)tx.textContent=v?'Judge connected':'Waiting…';} if(GD.ROLE==='stage') renderStage(); };
+window.__onConn=(v)=>{
+  const el2=document.querySelector('.status-pill');
+  if(el2){el2.classList.toggle('live',v); const tx=el2.querySelector('.txt'); if(tx)tx.textContent=v?'Connected':'Reconnecting…';}
+};
 
 // ===================================================================
 // DRAFT UI  (runs on the handheld: judge device, or solo device)
@@ -1307,7 +1584,7 @@ function stageSig(st){
   const d=st.conquest&&st.conquest.duel;
   return [st.phase, st.conquest&&st.conquest.sub, st.conquest&&st.conquest.conqueror, st.conquest&&st.conquest.count,
     d&&d.blockId, d&&d.control, d&&d.answer&&d.answer.name, st.winner,
-    GD.connLive, GD.ROOM, st.flash, own].join('|');
+    st.draft&&st.draft.picker, GD.connLive, GD.ROOM, st.flash, own].join('|');
 }
 function updateStageClocks(){
   const st=S(); const d=st&&st.conquest&&st.conquest.duel; if(!d) return;
@@ -1338,10 +1615,11 @@ function renderStage(){
     if(!GD.soloMode && !GD.connLive){
       scr.append(roomCodeCard());
     } else {
-      const wait=el('div','stage-center');
-      wait.innerHTML=`<div class="big-emoji">🗺️</div><h2>Drafting territories…</h2>
-        <p class="note">Players are secretly claiming land on the judge device. The board reveals when the draft is done.</p>`;
-      scr.append(wait);
+      // Live draft board: players pick on their own phones; host shows progress.
+      const d=st.draft;
+      if(d){ scr.append(el('div','stage-flash','✋ '+nameOf(d.picker)+' is choosing a tile…')); }
+      scr.append(buildBoardStage(st));
+      scr.append(buildMiniScores(st));
     }
   }
   else if(st.phase==='conquest'){
@@ -1381,7 +1659,7 @@ function buildBoardStage(st){
   const cq=st.conquest;
   if(st.flash){ wrap.append(el('div','stage-flash',st.flash)); }
   else if(cq&&cq.sub==='chooseTarget'){ wrap.append(el('div','stage-flash','🎯 '+nameOf(cq.conqueror)+' — pick a 🎯 target')); }
-  const grid=el('div','grid-board big'); grid.style.gridTemplateColumns=`repeat(${st.cols},1fr)`;
+  const grid=el('div','grid-board big'); grid.style.gridTemplateColumns=`repeat(${st.cols},1fr)`; grid.style.gridTemplateRows=`repeat(${st.rows},1fr)`;
   const choosing = cq&&cq.sub==='chooseTarget';
   const targets = choosing ? new Set(GD.attackTargets(cq.conqueror).map(b=>b.id)) : new Set();
   st.blocks.forEach(b=>{
@@ -1420,9 +1698,18 @@ function duelSide(p,secs,active){
 }
 function buildMiniScores(st){
   const sb=el('div','mini-scores');
-  [...st.players].sort((a,b)=>GD.tileCount(b.id)-GD.tileCount(a.id)).forEach(p=>{
-    const r=el('div','ms-chip'+(p.out?' out':'')); r.style.setProperty('--pc',p.color);
-    r.innerHTML=`<span class="sw"></span>${p.name} <b>${GD.tileCount(p.id)}</b>`;
+  const ranked=[...st.players].sort((a,b)=>GD.tileCount(b.id)-GD.tileCount(a.id));
+  const lead=ranked.length?GD.tileCount(ranked[0].id):0;
+  // whose turn is it right now?
+  let activePid=null;
+  if(st.phase==='draft' && st.draft) activePid=st.draft.picker;
+  else if(st.phase==='conquest' && st.conquest) activePid=st.conquest.conqueror;
+  ranked.forEach(p=>{
+    const n=GD.tileCount(p.id);
+    const isLead = n===lead && n>0;
+    const isActive = p.id===activePid;
+    const r=el('div','ms-chip'+(p.out?' out':'')+(isActive?' active-turn':'')); r.style.setProperty('--pc',p.color);
+    r.innerHTML=`<span class="sw"></span>${isLead?'👑 ':''}${p.name} <b>${n}</b>`;
     sb.append(r);
   });
   return sb;
@@ -1613,9 +1900,126 @@ function soundToggle(){
 }
 window.__markWon=(id)=>{ justWonId=id; setTimeout(()=>{ justWonId=null; },650); };
 
+// ===================================================================
+// PLAYER SCREEN (own phone) — lobby wait, draft turn, duel clue
+// ===================================================================
+function myPlayerId(){
+  // Find which state player belongs to this device via clientId.
+  const st=S(); if(!st) return null;
+  const me=st.players.find(p=>p.clientId===GD.MYID);
+  return me?me.id:null;
+}
+function renderPlayer(){
+  currentScreen='player';
+  app.innerHTML='';
+  const st=S();
+  const w=el('div','wrap player-wrap');
+  // header
+  const head=el('div','player-head');
+  head.innerHTML=`<span class="logo-sm">GRID DUEL</span><span class="status-pill ${GD.connLive?'live':''}"><span class="dot"></span><span class="txt">${GD.connLive?'Connected':'Reconnecting…'}</span></span>`;
+  w.append(head);
+
+  if(!st || st.phase==='lobby' || st.phase===undefined && !st.phase){
+    // Not started yet — waiting in lobby
+  }
+  if(!st || !st.phase){
+    w.append(centerCard(`<div class="big-emoji">⏳</div><h2>You're in!</h2><p class="note">Waiting for the host to start the game…</p>`));
+    app.append(w); return;
+  }
+
+  const pid=myPlayerId();
+  const meName = pid!=null ? nameOf(pid) : (GD.MYNAME||'You');
+
+  if(st.phase==='draft'){
+    const d=st.draft;
+    const myTurn = d && d.picker===pid;
+    if(myTurn){
+      w.append(el('div','turn-banner mine',`Your turn, ${meName} — pick a tile`));
+      const sub=el('p','note'); const need=d.quota[d.picker]-d.claimed[d.picker];
+      sub.innerHTML=`Tap a highlighted tile to claim it · ${d.claimed[d.picker]}/${d.quota[d.picker]} claimed`;
+      w.append(sub);
+      w.append(buildPlayerDraftGrid(st,pid));
+    } else {
+      const who = d ? nameOf(d.picker) : '…';
+      w.append(centerCard(`<div class="big-emoji">✋</div><h2>Waiting…</h2><p class="note"><b style="color:${d?colorOf(d.picker):'#fff'}">${who}</b> is choosing a tile.</p>`));
+      w.append(miniBoardView(st));
+    }
+    app.append(w); return;
+  }
+
+  if(st.phase==='conquest'){
+    const cq=st.conquest;
+    if(cq && cq.sub==='duel' && cq.duel){
+      // Show the photo clue (NO answer — answer is judge-only)
+      const d=cq.duel;
+      const amInvolved = (pid===d.challenger||pid===d.defender);
+      const banner = amInvolved ? `You're dueling! Category: ${d.cat}` : `${nameOf(d.challenger)} vs ${nameOf(d.defender)} — ${d.cat}`;
+      w.append(el('div','turn-banner'+(amInvolved?' mine':''),banner));
+      const frame=el('div','img-frame player-clue'); w.append(frame);
+      loadImageInto(frame, Object.assign({cat:d.cat}, d.answer));
+      const hint=el('p','note dim'); hint.style.textAlign='center';
+      hint.textContent = amInvolved ? 'Say your answer out loud — the judge will mark it.' : 'Watch the duel on the main screen.';
+      w.append(hint);
+    } else {
+      w.append(centerCard(`<div class="big-emoji">🎯</div><h2>${cq&&cq.conqueror!=null?nameOf(cq.conqueror):'…'}'s turn</h2><p class="note">Choosing a tile to attack. Watch the main screen.</p>`));
+    }
+    w.append(miniScoreStrip(st,pid));
+    app.append(w); return;
+  }
+
+  if(st.phase==='gameover'){
+    const win=st.winner;
+    const iWon = win===pid;
+    w.append(centerCard(`<div class="big-emoji">${iWon?'🏆':'🎉'}</div><h2>${iWon?'You win!':nameOf(win)+' wins!'}</h2><p class="note">Thanks for playing.</p>`));
+    app.append(w); return;
+  }
+
+  // fallback
+  w.append(centerCard(`<p class="note">Syncing…</p>`));
+  app.append(w);
+}
+function centerCard(html){ const c=el('div','center-card'); c.innerHTML=html; return c; }
+
+// Player's own draft grid — only their legal picks are tappable.
+function buildPlayerDraftGrid(st,pid){
+  const grid=el('div','grid-board'); grid.style.gridTemplateColumns=`repeat(${st.cols},1fr)`;
+  const pickable=new Set(GD.draftPickable(pid).map(b=>b.id));
+  st.blocks.forEach(b=>{
+    const t=el('div','gb');
+    if(b.owner===pid){ t.classList.add('mine'); t.style.setProperty('--pc',colorOf(pid)); t.innerHTML=`<span class="cat-name">${b.cat}</span><span class="chk">✓</span>`; }
+    else if(b.owner!==null){ t.classList.add('taken'); t.style.setProperty('--pc',colorOf(b.owner)); t.innerHTML=`<span class="cat-name">${b.cat}</span><span class="lock">🔒</span>`; }
+    else { t.innerHTML=`<span class="cat-name">${b.cat}</span>`; if(pickable.has(b.id)){ t.classList.add('pickable'); t.onclick=()=>{ GD.sfx&&GD.sfx('pick'); playerAct('draftPick',{blockId:b.id}); }; } else { t.classList.add('faded'); } }
+    grid.append(t);
+  });
+  return grid;
+}
+// Read-only mini board for players when it's not their turn.
+function miniBoardView(st){
+  const grid=el('div','grid-board mini'); grid.style.gridTemplateColumns=`repeat(${st.cols},1fr)`;
+  st.blocks.forEach(b=>{
+    const t=el('div','gb mini-gb');
+    if(b.owner!==null){ t.style.setProperty('--pc',colorOf(b.owner)); t.classList.add('owned'); }
+    grid.append(t);
+  });
+  return grid;
+}
+function miniScoreStrip(st,pid){
+  const strip=el('div','mini-scores');
+  const counts=st.players.map(p=>({p,n:GD.tileCount(p.id)})).sort((a,b)=>b.n-a.n);
+  const lead=counts[0]?counts[0].n:0;
+  counts.forEach(({p,n})=>{
+    const chip=el('span','ms-chip'+(p.id===pid?' me':''));
+    chip.style.setProperty('--pc',p.color);
+    chip.innerHTML=`<span class="ms-dot"></span>${p.name}${n===lead&&n>0?' 👑':''} <b>${n}</b>`;
+    strip.append(chip);
+  });
+  return strip;
+}
+
 // wire to logic + boot
 window.__renderStage=renderStage;
 window.__renderJudge=renderJudge;
+window.__renderPlayer=renderPlayer;
 // unlock Web Audio on first gesture (browsers require it)
 function unlockAudio(){ GD.setSound(GD.getSound()); GD.sfx&&GD.sfx('pick'); document.removeEventListener('pointerdown',unlockAudio); }
 document.addEventListener('pointerdown',unlockAudio);

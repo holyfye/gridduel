@@ -173,11 +173,17 @@ h1,h2,h3{font-family:'Anton',sans-serif;font-weight:400;letter-spacing:.5px;text
 /* =========================================================
    JUDGE / ADMIN SCREEN
    ========================================================= */
-#judgeScreen{display:flex;flex-direction:column;min-height:100vh;padding:14px;gap:12px}
+#judgeScreen{display:flex;flex-direction:column;min-height:100vh;min-height:100dvh;padding:16px;gap:14px;max-width:680px;margin:0 auto;width:100%}
 .judge-head{display:flex;justify-content:space-between;align-items:center}
-.judge-head .ttl{font-family:'Anton';font-size:20px;color:var(--cool);letter-spacing:1px}
-.phase-card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:18px}
+.judge-head .ttl{font-family:'Anton';font-size:22px;color:var(--cool);letter-spacing:1px}
+.phase-card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:clamp(16px,3vw,26px)}
 .phase-card .ph-label{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:6px}
+/* Big duel answer + controls feel substantial on desktop, not lost in whitespace */
+@media(min-width:560px){
+  .answer-reveal .a-name{font-size:52px}
+  .judge-actions .btn{padding:26px;font-size:22px}
+  .duel-clocks{max-width:560px;margin-left:auto;margin-right:auto}
+}
 
 .answer-reveal{text-align:center;background:linear-gradient(180deg,var(--bg2),var(--panel));border:2px solid var(--gold);border-radius:18px;padding:22px 16px;margin:4px 0}
 .answer-reveal .a-label{font-size:11px;letter-spacing:3px;color:var(--gold);text-transform:uppercase;font-weight:800}
@@ -404,6 +410,14 @@ details ul{padding-left:18px}
 .ms-chip.active-turn{box-shadow:0 0 0 2px var(--pc);animation:turnPulse 1.4s infinite}
 @keyframes turnPulse{0%,100%{box-shadow:0 0 0 2px var(--pc)}50%{box-shadow:0 0 14px 2px var(--pc)}}
 .ms-chip .ms-dot{width:8px;height:8px;border-radius:50%;background:var(--pc,#fff);display:inline-block;margin-right:5px}
+.img-frame.player-clue{width:min(90vw,440px);max-height:52vh;aspect-ratio:auto;margin:0 auto}
+.img-frame.player-clue img,.img-frame.player-clue .clue-img{width:100%;height:100%;max-height:52vh;object-fit:contain;background:#0c1130}
+.duel-timers{display:flex;gap:10px;justify-content:center;margin:10px 0}
+.dt-clock{flex:1;max-width:160px;background:var(--bg2);border:2px solid var(--line);border-radius:12px;padding:8px 10px;text-align:center;opacity:.5;transition:.2s}
+.dt-clock.running{opacity:1;border-color:var(--pc);box-shadow:0 0 16px -2px var(--pc)}
+.dt-clock .dt-name{display:block;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--pc)}
+.dt-clock .dt-time{display:block;font-family:'Anton';font-size:30px;line-height:1.1}
+.turn-banner.compact{font-size:clamp(15px,4vw,20px);padding:8px 12px;margin-bottom:8px}
 </style>
 </head>
 <body>
@@ -665,39 +679,53 @@ function clientIdToPlayerId(cid){ return peers[cid]?peers[cid].playerId:null; }
 function setLobbyCallback(fn){ onLobbyChange=fn; }
 // PLAYER/JUDGE: join a room with a chosen name and role ('player'|'judge').
 function joinRoom(code, name, roleOrCb, cb){
-  // back-compat: (code,name,cb)
   let role='player';
   if(typeof roleOrCb==='function'){ cb=roleOrCb; } else if(roleOrCb){ role=roleOrCb; }
   MYROLE=role;
   ROOM=code.toUpperCase();
   MYNAME=name||MYNAME||'Player';
-  try{ MYID = MYID || localStorage.getItem('gd_clientid') || makeClientId(); localStorage.setItem('gd_clientid',MYID); }
-  catch(e){ MYID = MYID || makeClientId(); }
+  // Persist session so a refresh / wake can auto-rejoin without retyping.
+  try{
+    MYID = MYID || localStorage.getItem('gd_clientid') || makeClientId();
+    localStorage.setItem('gd_clientid',MYID);
+    localStorage.setItem('gd_room',ROOM);
+    localStorage.setItem('gd_name',MYNAME);
+    localStorage.setItem('gd_role',MYROLE);
+  }catch(e){ MYID = MYID || makeClientId(); }
   joinAttempts++;
+  try{ if(peer){ peer.destroy(); } }catch(_){}
   peer=new Peer(peerOptions());
   let settled=false;
   peer.on('open',()=>{
     conn=peer.connect(PREFIX+ROOM,{reliable:true});
     conn.on('open',()=>{
-      settled=true; setConnLive(true);
+      settled=true; joinAttempts=0; setConnLive(true);
       sendHost({t:'hello', clientId:MYID, name:MYNAME, role:MYROLE});
       startPlayerPing();
       cb&&cb(true);
     });
     conn.on('data',handleHostMsg);
-    conn.on('close',()=>{ setConnLive(false); showToast('Lost connection — reconnecting…'); scheduleRejoin(code); });
-    conn.on('error',()=>{ setConnLive(false); });
-    setTimeout(()=>{ if(!settled){ if(joinAttempts<2){ try{peer.destroy();}catch(_){} joinRoom(code,MYNAME,MYROLE,cb); } else { cb&&cb(false,'Could not reach the host. Check the code & that the host screen is open.'); } } },9000);
+    conn.on('close',()=>{ setConnLive(false); scheduleRejoin(ROOM); });
+    conn.on('error',()=>{ setConnLive(false); scheduleRejoin(ROOM); });
+    setTimeout(()=>{ if(!settled){ try{peer.destroy();}catch(_){} if(cb&&joinAttempts<=1){ cb(false,'Could not reach the host. Is the host screen open?'); } else { scheduleRejoin(ROOM); } } },9000);
   });
   peer.on('error',(e)=>{
-    if(e.type==='peer-unavailable'){ settled=true; cb&&cb(false,'No game with that code — is the host screen open?'); }
-    else if(!settled && joinAttempts<2){ try{peer.destroy();}catch(_){} joinRoom(code,MYNAME,MYROLE,cb); }
-    else if(!settled){ cb&&cb(false, e.type); }
+    if(e.type==='peer-unavailable'){ settled=true; if(cb&&joinAttempts<=1){cb(false,'No game with that code — is the host screen open?');} else { scheduleRejoin(ROOM); } }
+    else if(!settled){ scheduleRejoin(ROOM); }
   });
 }
+// Keep retrying reconnection (server may be waking from sleep on the free tier).
+let rejoinTries=0;
 function scheduleRejoin(code){
-  if(reconnectTimer) return;
-  reconnectTimer=setTimeout(()=>{ reconnectTimer=null; if(!connLive && (ROLE==='player'||ROLE==='judge')){ joinAttempts=0; joinRoom(code,MYNAME,MYROLE,(ok)=>{ if(ok) showToast('Reconnected!'); }); } },2000);
+  if(reconnectTimer || connLive) return;
+  if(ROLE!=='player' && ROLE!=='judge') return;
+  rejoinTries++;
+  const delay=Math.min(2000 + rejoinTries*1500, 8000);   // backoff, capped at 8s
+  showToast('Reconnecting…');
+  reconnectTimer=setTimeout(()=>{
+    reconnectTimer=null;
+    if(!connLive){ joinRoom(code||ROOM, MYNAME, MYROLE, (ok)=>{ if(ok){ rejoinTries=0; showToast('Reconnected!'); } }); }
+  },delay);
 }
 // Player heartbeat so the host knows we're alive; also helps detect wake.
 let pingTimer=null;
@@ -705,6 +733,7 @@ function startPlayerPing(){ stopPlayerPing(); pingTimer=setInterval(()=>{ sendHo
 function stopPlayerPing(){ if(pingTimer){clearInterval(pingTimer);pingTimer=null;} }
 
 // PLAYER/JUDGE: handle messages from host.
+let lastRoster=null;
 function handleHostMsg(m){
   if(!m||!m.t) return;
   if(m.t==='welcome'){ MYID=m.clientId; try{localStorage.setItem('gd_clientid',MYID);}catch(e){} }
@@ -713,8 +742,10 @@ function handleHostMsg(m){
     if(MYROLE==='judge'){ if(window.__renderJudge) window.__renderJudge(); }
     else { if(window.__renderPlayer) window.__renderPlayer(); }
   }
+  else if(m.t==='roster'){ lastRoster=m; if(window.__renderPlayer&&(!STATE||!STATE.phase)) window.__renderPlayer(); }
   else if(m.t==='pong'){ /* alive confirmed */ }
 }
+function getRoster(){ return lastRoster; }
 function startHeartbeat(){ stopHeartbeat(); hbTimer=setInterval(()=>{ if(ROLE==='stage') broadcast({t:'state',s:STATE}); },4000); }
 function stopHeartbeat(){ if(hbTimer){clearInterval(hbTimer);hbTimer=null;} }
 function setConnLive(v){ connLive=v; if(window.__onConn) window.__onConn(v); }
@@ -796,20 +827,40 @@ function draftPickable(pid){
   const free=STATE.blocks.filter(b=>b.owner===null);
   const mine=ownedBy(pid);
   if(mine.length===0){
-    // first pick = a seed. Prefer free cells far from other players' seeds so
-    // regions have room to grow (reduces boxing-in on crowded boards).
-    const others=STATE.blocks.filter(b=>b.owner!==null);
-    if(others.length===0) return free;
-    const scored=free.map(b=>{
-      let dmin=Infinity;
-      others.forEach(o=>{ const d=Math.abs(o.r-b.r)+Math.abs(o.c-b.c); if(d<dmin)dmin=d; });
-      return {b,d:dmin};
-    }).sort((a,z)=>z.d-a.d);
-    const best=scored[0].d;
-    return scored.filter(s=>s.d>=best-1).map(s=>s.b);   // any of the farthest cells
+    return seedCells(free,null);
   }
-  // growth: only free cells orthogonally adjacent to my territory
-  return free.filter(b=> neighbors(b).some(nb=>nb.owner===pid));
+  // growth: free cells adjacent to my territory
+  const adj=free.filter(b=> neighbors(b).some(nb=>nb.owner===pid));
+  // If boxed in, seed as close to my existing territory as possible (keeps it
+  // connected when feasible) so I still reach my fair quota.
+  if(adj.length===0){ return seedCells(free,pid); }
+  return adj;
+}
+function seedCells(free,nearPid){
+  if(!free.length) return [];
+  if(nearPid!=null){
+    // closest free cell(s) to my own territory — minimizes disconnection
+    const mine=ownedBy(nearPid);
+    if(mine.length){
+      const scored=free.map(b=>{
+        let dmin=Infinity;
+        mine.forEach(o=>{ const d=Math.abs(o.r-b.r)+Math.abs(o.c-b.c); if(d<dmin)dmin=d; });
+        return {b,d:dmin};
+      }).sort((a,z)=>a.d-z.d);
+      const best=scored[0].d;
+      return scored.filter(s=>s.d<=best).map(s=>s.b);
+    }
+  }
+  // fresh seed: farthest from ALL owned tiles so regions have room
+  const others=STATE.blocks.filter(b=>b.owner!==null);
+  if(others.length===0) return free;
+  const scored=free.map(b=>{
+    let dmin=Infinity;
+    others.forEach(o=>{ const d=Math.abs(o.r-b.r)+Math.abs(o.c-b.c); if(d<dmin)dmin=d; });
+    return {b,d:dmin};
+  }).sort((a,z)=>z.d-a.d);
+  const best=scored[0].d;
+  return scored.filter(s=>s.d>=best-1).map(s=>s.b);
 }
 function draftDone(){
   // every player has hit quota OR no free blocks remain
@@ -818,7 +869,6 @@ function draftDone(){
 }
 function advanceDraftPicker(){
   const d=STATE.draft, n=d.order.length;
-  // snake pointer
   let guard=0;
   do{
     d.ptr += d.dir;
@@ -826,30 +876,39 @@ function advanceDraftPicker(){
     else if(d.ptr<0){ d.ptr=0; d.dir=1; d.round++; }
     d.picker=d.order[d.ptr];
     guard++;
-    // skip players who've hit quota or are boxed in (no legal pick)
     const done = d.claimed[d.picker]>=d.quota[d.picker];
-    const boxed = draftPickable(d.picker).length===0;
-    if(!done && !boxed) return true;
+    const canPick = draftPickable(d.picker).length>0;   // boxed players can now seed
+    if(!done && canPick) return true;
   } while(guard < n*4 && !draftDone());
-  return false;  // nobody can pick -> draft over
+  return false;
 }
 function fillRemainder(){
-  // Leftover free blocks go to an ADJACENT owner, preferring whoever owns the
-  // FEWEST tiles — keeps territories connected AND sizes balanced.
+  // Distribute leftover free blocks to keep territories BALANCED and connected.
+  // Priority: give each block to the adjacent owner that is furthest BELOW its
+  // quota (fewest tiles relative to fair share). This prevents one player from
+  // snowballing while a boxed-in player stays small.
+  const d=STATE.draft;
   let guard=0;
-  while(STATE.blocks.some(b=>b.owner===null) && guard++<STATE.blocks.length*3){
+  while(STATE.blocks.some(b=>b.owner===null) && guard++<STATE.blocks.length*4){
     const free=STATE.blocks.filter(b=>b.owner===null);
     let placed=false;
+    // sort free cells: fill ones with owned neighbors first
     for(const b of free){
-      const nbOwners=[...new Set(neighbors(b).map(nb=>nb.owner).filter(o=>o!==null))];
-      if(nbOwners.length){
-        nbOwners.sort((a,z)=>tileCount(a)-tileCount(z));
-        b.owner=nbOwners[0]; placed=true;
-      }
+      let nbOwners=[...new Set(neighbors(b).map(nb=>nb.owner).filter(o=>o!==null))];
+      if(!nbOwners.length) continue;
+      // prefer the owner most below their quota; tiebreak by fewest tiles
+      nbOwners.sort((a,z)=>{
+        const da=(d.quota[a]||0)-tileCount(a), dz=(d.quota[z]||0)-tileCount(z);
+        if(dz!==da) return dz-da;             // bigger deficit first
+        return tileCount(a)-tileCount(z);      // then fewest tiles
+      });
+      // only assign if that owner is at/below quota OR everyone adjacent is over
+      const best=nbOwners[0];
+      b.owner=best; d.claimed[best]=(d.claimed[best]||0)+1; placed=true;
     }
-    if(!placed){ // isolated pocket: seed it to the player with the fewest tiles
-      const pid=STATE.draft.order.slice().sort((a,z)=>tileCount(a)-tileCount(z))[0];
-      free[0].owner=pid;
+    if(!placed){ // isolated pocket: seed to the player furthest below quota
+      const pid=d.order.slice().sort((a,z)=>((d.quota[z]-tileCount(z))-(d.quota[a]-tileCount(a))))[0];
+      free[0].owner=pid; d.claimed[pid]=(d.claimed[pid]||0)+1;
     }
   }
 }
@@ -1134,7 +1193,7 @@ window.__GD={
   getServerURL, setServerURL,
   lobbyPlayers, lobbyJudges, hasJudge, assignPlayerSlots, clientIdToPlayerId, setLobbyCallback,
   get MYID(){return MYID;}, get MYNAME(){return MYNAME;}, get MYROLE(){return MYROLE;},
-  get peers(){return peers;},
+  get peers(){return peers;}, getRoster,
   fetchImage, getImage, idbCount, clearPhotoCache, showToast, shuffle,
   sfx, setSound, getSound,
   blockAt, neighbors, ownedBy, tileCount, attackTargets, isBorder, draftPickable,
@@ -1406,10 +1465,16 @@ function hostSetupFlow(){
 
 // Called from the category selector's Start button when in host mode.
 let lobbyPollTimer=null;
+function broadcastRoster(){
+  // Send the current lobby roster to all connected devices (players see it).
+  const roster=GD.lobbyPlayers().filter(p=>p.alive).map(p=>p.name);
+  const judges=GD.lobbyJudges().filter(p=>p.alive).length;
+  if(GD.peers){ for(const id in GD.peers){ const pr=GD.peers[id]; if(pr.conn&&pr.conn.open){ try{pr.conn.send({t:'roster',players:roster,judges});}catch(e){} } } }
+}
 function openLobby(){
   GD.soloMode=false; GD.ROLE='stage';
   GD.hostRoom(()=>{ renderLobby(); });
-  GD.setLobbyCallback(()=>{ if(currentScreen==='lobby') renderLobby(); });
+  GD.setLobbyCallback(()=>{ if(currentScreen==='lobby') renderLobby(); broadcastRoster(); });
 }
 function renderLobby(){
   currentScreen='lobby';
@@ -1417,13 +1482,29 @@ function renderLobby(){
   const w=el('div','wrap lobby-wrap');
   const code=GD.ROOM||'····';
   const players=GD.lobbyPlayers().filter(p=>p.alive);
+  const judges=GD.lobbyJudges().filter(p=>p.alive);
   const url=(location&&location.origin&&/^https?:$/.test(location.protocol))?location.origin:'(open the game link)';
   w.innerHTML=`<div class="lobby-head">
       <div class="logo-sm">GRID DUEL</div>
-      <h2>Players, join on your phones</h2>
-      <p class="note">Open <b>${url}</b> → tap <b>Join on My Phone</b> → enter code:</p>
+      <h2>Game Lobby</h2>
+      <p class="note">Players: open <b>${url}</b> → <b>Join as Player</b> → enter code:</p>
       <div class="join-code">${code}</div>
     </div>`;
+
+  // Judge controls (this device hosts the screen; judge runs on a separate tab)
+  const judgeCard=el('div','card'); judgeCard.style.marginTop='4px';
+  const haveJudge=judges.length>0;
+  judgeCard.innerHTML=`<div class="ph-label">Judge ${haveJudge?'<span style="color:var(--good)">✓ connected</span>':'<span style="color:var(--bad)">not connected</span>'}</div>
+    <p class="note">The judge sees answers — keep it OFF the TV. Open it in a separate tab/device.</p>`;
+  const jbtn=el('button','btn alt small','⚖️ Open Judge Screen (new tab)');
+  jbtn.onclick=()=>{
+    try{ const u=new URL(location.href); u.hash='judge='+code; window.open(u.toString(),'_blank'); }
+    catch(e){ showToast('Open a new tab and Join as Judge with code '+code); }
+  };
+  judgeCard.append(jbtn);
+  w.append(judgeCard);
+
+  // Live roster (players see this too via their own screen)
   const list=el('div','lobby-list');
   if(players.length===0){ list.innerHTML='<p class="note dim">Waiting for players to join…</p>'; }
   players.forEach((p,i)=>{
@@ -1432,10 +1513,14 @@ function renderLobby(){
     list.append(row);
   });
   w.append(list);
+
   const startInfo=el('p','note dim'); startInfo.style.marginTop='10px';
-  startInfo.textContent = players.length<2 ? 'Need at least 2 players to start.' : `${players.length} players ready.`;
+  const enoughPlayers=players.length>=2;
+  startInfo.textContent = !enoughPlayers ? 'Need at least 2 players to start.'
+    : !haveJudge ? `${players.length} players ready · waiting for a judge.`
+    : `${players.length} players + judge ready.`;
   w.append(startInfo);
-  const start=el('button','btn good'); start.textContent='Start Game ▶'; start.disabled=players.length<2;
+  const start=el('button','btn good'); start.textContent='Start Game ▶'; start.disabled=!(enoughPlayers&&haveJudge);
   start.onclick=startHostedGame; w.append(start);
   const cancel=el('button','btn ghost small','Cancel'); cancel.onclick=()=>{ currentScreen=null; renderMenu(); }; w.append(cancel);
   app.append(w);
@@ -1923,7 +2008,17 @@ function renderPlayer(){
     // Not started yet — waiting in lobby
   }
   if(!st || !st.phase){
-    w.append(centerCard(`<div class="big-emoji">⏳</div><h2>You're in!</h2><p class="note">Waiting for the host to start the game…</p>`));
+    const r=GD.getRoster&&GD.getRoster();
+    let rosterHtml='';
+    if(r&&r.players&&r.players.length){
+      rosterHtml='<div class="lobby-list" style="margin-top:14px">'+
+        r.players.map((nm,i)=>`<div class="lobby-player" style="--pc:${PCOLORS[i%PCOLORS.length]}"><span class="lp-dot"></span><span class="lp-name">${nm}</span><span class="lp-tag">ready</span></div>`).join('')+
+        '</div>'+
+        `<p class="note dim" style="margin-top:8px">${r.players.length} player${r.players.length===1?'':'s'} in${r.judges?' · judge ready':' · waiting for judge'}</p>`;
+    } else {
+      rosterHtml='<p class="note">Waiting for the host to start the game…</p>';
+    }
+    w.append(centerCard(`<div class="big-emoji">⏳</div><h2>You're in!</h2>${rosterHtml}`));
     app.append(w); return;
   }
 
@@ -1950,16 +2045,28 @@ function renderPlayer(){
   if(st.phase==='conquest'){
     const cq=st.conquest;
     if(cq && cq.sub==='duel' && cq.duel){
-      // Show the photo clue (NO answer — answer is judge-only)
       const d=cq.duel;
       const amInvolved = (pid===d.challenger||pid===d.defender);
-      const banner = amInvolved ? `You're dueling! Category: ${d.cat}` : `${nameOf(d.challenger)} vs ${nameOf(d.defender)} — ${d.cat}`;
-      w.append(el('div','turn-banner'+(amInvolved?' mine':''),banner));
+      w.append(el('div','turn-banner'+(amInvolved?' mine':'')+' compact', amInvolved?`Your duel · ${d.cat}`:`${d.cat}`));
+      // Dual timer bar — both players' clocks, active one highlighted.
+      const timers=el('div','duel-timers');
+      [d.challenger,d.defender].forEach(ppid=>{
+        const active=d.control===ppid;
+        const t=el('div','dt-clock'+(active?' running':'')); t.style.setProperty('--pc',colorOf(ppid));
+        t.innerHTML=`<span class="dt-name">${nameOf(ppid)}${ppid===pid?' (you)':''}</span><span class="dt-time">${d.time[ppid]}</span>`;
+        timers.append(t);
+      });
+      w.append(timers);
+      // Photo clue, height-constrained so it never forces scrolling.
       const frame=el('div','img-frame player-clue'); w.append(frame);
       loadImageInto(frame, Object.assign({cat:d.cat}, d.answer));
-      const hint=el('p','note dim'); hint.style.textAlign='center';
-      hint.textContent = amInvolved ? 'Say your answer out loud — the judge will mark it.' : 'Watch the duel on the main screen.';
+      const hint=el('p','note dim'); hint.style.textAlign='center'; hint.style.margin='8px 0 0';
+      hint.textContent = amInvolved ? 'Say your answer out loud — the judge marks it.' : 'Watch the duel on the main screen.';
       w.append(hint);
+    } else if(cq && cq.sub==='countdown' && cq.duel){
+      const d=cq.duel;
+      w.append(el('div','turn-banner compact',`${nameOf(d.challenger)} vs ${nameOf(d.defender)}`));
+      w.append(centerCard(`<div class="big-emoji">${cq.count>0?cq.count:'GO!'}</div><p class="note">${d.cat}</p>`));
     } else {
       w.append(centerCard(`<div class="big-emoji">🎯</div><h2>${cq&&cq.conqueror!=null?nameOf(cq.conqueror):'…'}'s turn</h2><p class="note">Choosing a tile to attack. Watch the main screen.</p>`));
     }
@@ -2049,7 +2156,45 @@ async function photoSelfCheck(){
 }
 setTimeout(photoSelfCheck, 1200);
 
-renderMenu();
+// #1: if opened with #judge=CODE (from the host's "Open Judge Screen" button),
+// auto-join as judge so the host doesn't have to retype the code.
+(function autoJudge(){
+  try{
+    const h=location.hash||'';
+    const m=h.match(/judge=([A-Z0-9]{4})/i);
+    if(m){
+      const code=m[1].toUpperCase();
+      GD.ROLE='judge'; GD.soloMode=false;
+      GD.joinRoom(code,'Judge','judge',(ok)=>{ if(ok){ showToast('Judge connected'); renderJudge(); } else { renderMenu(); } });
+      return;
+    }
+    // #2: a player who refreshed mid-game can auto-rejoin their saved session.
+    const savedRoom=localStorage.getItem('gd_room');
+    const savedRole=localStorage.getItem('gd_role');
+    const savedName=localStorage.getItem('gd_name');
+    if(savedRoom && (savedRole==='player'||savedRole==='judge')){
+      // offer a quick reconnect instead of forcing code re-entry
+      renderReconnectPrompt(savedRoom,savedRole,savedName);
+      return;
+    }
+  }catch(e){}
+  renderMenu();
+})();
+
+function renderReconnectPrompt(room,role,name){
+  app.innerHTML='';
+  const w=el('div','wrap');
+  w.append(el('h2',null,'Welcome back'));
+  w.insertAdjacentHTML('beforeend',`<p class="note">Reconnect to your game as <b>${role==='judge'?'Judge':(name||'Player')}</b> (room ${room})?</p>`);
+  const go=el('button','btn good','🔄 Rejoin Game');
+  go.onclick=()=>{ GD.ROLE=role; GD.soloMode=false; go.disabled=true; go.textContent='Rejoining…';
+    GD.joinRoom(room,name||'Player',role,(ok)=>{ if(ok){ role==='judge'?renderJudge():renderPlayer(); } else { go.disabled=false; go.textContent='🔄 Rejoin Game'; showToast('Could not rejoin — host may have ended the game'); } }); };
+  w.append(go);
+  const fresh=el('button','btn ghost small','Start fresh (main menu)');
+  fresh.onclick=()=>{ try{localStorage.removeItem('gd_room');}catch(e){} renderMenu(); };
+  w.append(fresh);
+  app.append(w);
+}
 })();
 
 </script>
